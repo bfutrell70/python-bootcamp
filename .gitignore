@@ -14,4 +14,90 @@ __pycache__/
 *.egg-info/
 dist/
 build/
-*/chrome_profile/
+new-day-49/chrome_profile/
+new-day-49/chrome_profile/DevToolsActivePort
+new-day-49/chrome_profile/first_party_sets.db
+new-day-49/chrome_profile/Local State
+new-day-49/chrome_profile/Variations
+new-day-49/chrome_profile/BrowserMetrics/BrowserMetrics-6A93555E-2614.pma
+new-day-49/chrome_profile/CertificateRevocation/10742/crl-set
+new-day-49/chrome_profile/CertificateRevocation/10742/LICENSE
+new-day-49/chrome_profile/CertificateRevocation/10742/manifest.json
+new-day-49/chrome_profile/CertificateRevocation/10742/_metadata/verified_contents.json
+new-day-49/chrome_profile/component_crx_cache/b061cc3e71ec55b90783a92c929c9cabd7aa5627b2c4fee45dc9fad2d9085112
+new-day-49/chrome_profile/component_crx_cache/metadata.json
+new-day-49/chrome_profile/Default/DIPS
+new-day-49/chrome_profile/Default/Favicons
+new-day-49/chrome_profile/Default/History
+new-day-49/chrome_profile/Default/History-journal
+new-day-49/chrome_profile/Default/Preferences
+new-day-49/chrome_profile/Default/Secure Preferences
+new-day-49/chrome_profile/Default/Web Data
+new-day-49/chrome_profile/Default/Cache/Cache_Data/2cf56b40127887f6_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/5c09e290df281df4_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/5f2cd06008d29039_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/7fe25afe1af52047_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/22e09ce13d02a3f4_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/28ea9c8686ef2722_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/35aaa5ee3bc5af65_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/41bc81804899ad94_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/75d33d5148005b60_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/93d81321f8c35eab_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/118fb0fa2505d3b2_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/907af08c9f1a0fa6_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/962fa29a7c42565f_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/3523b899ed5aecf6_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/5097a6655470a039_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/6793e55c53dbf051_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/9376cc0b2323e642_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/15145040f7f12f31_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/a4c0a2088e3c6c7b_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/a181319988293cea_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/c04225ba527d6e68_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/c358978ba21a7578_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/e928a4b045693cbe_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/e068284c066e7a24_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/f65ec8663516938d_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/fe7069c83a558590_0
+new-day-49/chrome_profile/Default/Cache/Cache_Data/index-dir/the-real-index
+new-day-49/chrome_profile/Default/Code Cache/js/index-dir/the-real-index
+new-day-49/chrome_profile/Default/DawnGraphiteCache/data_1
+new-day-49/chrome_profile/Default/DawnGraphiteCache/index
+new-day-49/chrome_profile/Default/DawnWebGPUCache/data_1
+new-day-49/chrome_profile/Default/DawnWebGPUCache/index
+new-day-49/chrome_profile/Default/Extension State/LOG
+new-day-49/chrome_profile/Default/Extension State/LOG.old
+new-day-49/chrome_profile/Default/GCM Store/LOG
+new-day-49/chrome_profile/Default/GCM Store/LOG.old
+new-day-49/chrome_profile/Default/GPUCache/data_1
+new-day-49/chrome_profile/Default/GPUCache/index
+new-day-49/chrome_profile/Default/IndexedDB/https_appbrewery.github.io_0.indexeddb.leveldb/000004.log
+new-day-49/chrome_profile/Default/IndexedDB/https_appbrewery.github.io_0.indexeddb.leveldb/LOG
+new-day-49/chrome_profile/Default/IndexedDB/https_appbrewery.github.io_0.indexeddb.leveldb/LOG.old
+new-day-49/chrome_profile/Default/Local Storage/leveldb/000003.log
+new-day-49/chrome_profile/Default/Local Storage/leveldb/LOG
+new-day-49/chrome_profile/Default/Local Storage/leveldb/LOG.old
+new-day-49/chrome_profile/Default/Network/Cookies
+new-day-49/chrome_profile/Default/Network/Network Persistent State
+new-day-49/chrome_profile/Default/Network/Reporting and NEL
+new-day-49/chrome_profile/Default/Network/TransportSecurity
+new-day-49/chrome_profile/Default/Session Storage/000003.log
+new-day-49/chrome_profile/Default/Session Storage/LOG
+new-day-49/chrome_profile/Default/Sessions/Session_13432514113932667
+new-day-49/chrome_profile/Default/Sessions/Session_13432514145353869
+new-day-49/chrome_profile/Default/Sessions/Tabs_13432514114786656
+new-day-49/chrome_profile/Default/Sessions/Tabs_13432514146345776
+new-day-49/chrome_profile/Default/shared_proto_db/000004.log
+new-day-49/chrome_profile/Default/shared_proto_db/LOG
+new-day-49/chrome_profile/Default/shared_proto_db/LOG.old
+new-day-49/chrome_profile/Default/shared_proto_db/MANIFEST-000001
+new-day-49/chrome_profile/Default/shared_proto_db/metadata/000003.log
+new-day-49/chrome_profile/Default/shared_proto_db/metadata/LOG
+new-day-49/chrome_profile/Default/shared_proto_db/metadata/LOG.old
+new-day-49/chrome_profile/Default/Site Characteristics Database/000003.log
+new-day-49/chrome_profile/Default/Site Characteristics Database/LOG
+new-day-49/chrome_profile/Default/Site Characteristics Database/LOG.old
+new-day-49/chrome_profile/Default/Sync Data/LevelDB/LOG
+new-day-49/chrome_profile/Default/Sync Data/LevelDB/LOG.old
+new-day-49/chrome_profile/Default/WebStorage/QuotaManager
+new-day-49/chrome_profile/segmentation_platform/ukm_db
