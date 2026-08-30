@@ -4,6 +4,7 @@ import selenium.common
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 import time
 
@@ -138,6 +139,10 @@ div id = "day-group-sat,-aug-22"
 # get div elements representing each class
 print('--- finding date by getting class containers')
 
+"""
+find the ID of the container containing Tuesday classes
+returns: ID of the div element that contains the classes held on Tuesday 
+"""
 def find_tuesday_div():
     tuesday_div_id = ''
 
@@ -166,7 +171,6 @@ def find_tuesday_div():
             day = h2_element.text
             day_of_week = get_day_of_week(day)
             if is_date_tuesday(day_of_week) == True:
-                # print('Tuesday found!')
                 tuesday_div_id = container.get_attribute("id")
                 break
 
@@ -175,5 +179,64 @@ def find_tuesday_div():
 
     return tuesday_div_id
 
+"""
+:param day_container - element containing classes to search through
+:returns: string containing the ID of the div element for the class
+"""
+def find_6pm_class_div(day_container_id):
+    class_div_id = ''
 
-print(f'ID of div for Tuesday: [{find_tuesday_div()}]')
+    day_container = driver.find_element(By.CSS_SELECTOR, f'div[id="{day_container_id}"]')
+    class_cards = day_container.find_elements(By.CSS_SELECTOR, 'div[id^="class-card-"]')
+
+    for class_card_index in range(len(class_cards)):
+        class_card = class_cards[class_card_index]
+        class_time = class_card.find_element(By.CSS_SELECTOR, 'p[id^="class-time-"]')
+
+        try:
+            # raises a ValueError if the search text is not found
+            if class_time.text.index("6:00 PM") != -1:
+                class_div_id = class_cards[class_card_index].get_attribute("id")
+                break
+        except ValueError:
+            pass
+
+    return class_div_id
+
+def exercise_class_name(class_div_id):
+    exercise_class_div = driver.find_element(By.CSS_SELECTOR, f'div[id="{class_div_id}"]')
+    class_name = exercise_class_div.find_element(By.CSS_SELECTOR, 'h3[id^="class-name-"]')
+    return class_name.text
+
+def exercise_date(class_div_id):
+    exercise_class_div = driver.find_element(By.CSS_SELECTOR, f'div[id="{class_div_id}"]')
+    # header_date = exercise_class_div.find_element(By.CSS_SELECTOR, 'h2[id^="day-title-"]')
+    # the h2 element is not within the exercise div element, but its ancestor div
+    xpath = f"//div[@id='{class_div_id}']/ancestor::div"
+    ancestor = exercise_class_div.find_elements(By.XPATH, xpath)[-1]
+
+    header_date = ancestor.find_element(By.CSS_SELECTOR, 'h2')
+    header_date_text = header_date.text
+
+    try:
+        if header_date_text.index("(") != -1:
+            # either today or tomorrow - has parenthesis around the data
+            header_date_text = header_date_text[header_date_text.index("(")+1:header_date_text.index(")")]
+    except ValueError:
+        pass
+
+    return header_date_text
+
+def book_class(class_div_id):
+    class_div = driver.find_element(By.CSS_SELECTOR, f'div[id="{class_div_id}"]')
+    book_button = class_div.find_element(By.CSS_SELECTOR, 'button[id^="book-button-"]')
+    book_button.click()
+
+    class_name = exercise_class_name(class_div_id)
+    class_date = exercise_date(class_div_id)
+
+    print(f"✓ Booked: {class_name} on {class_date}")
+
+tuesday_div = find_tuesday_div()
+class_div = find_6pm_class_div(tuesday_div)
+book_class(class_div)
