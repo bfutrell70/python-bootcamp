@@ -1,0 +1,70 @@
+{
+  "meta" : {
+    "count" : 5,
+    "links" : {
+      "self" : "https://test.api.amadeus.com/v1/reference-data/locations/cities?keyword=Raleigh&max=10"
+    }
+  },
+  "data" : [ {
+    "type" : "location",
+    "subType" : "city",
+    "name" : "Raleigh",
+    "iataCode" : "RDU",
+    "address" : {
+      "countryCode" : "US",
+      "stateCode" : "US-NC"
+    },
+    "geoCode" : {
+      "latitude" : 35.7721,
+      "longitude" : -78.63861
+    }
+  }, {
+    "type" : "location",
+    "subType" : "city",
+    "name" : "Raleigh",
+    "address" : {
+      "countryCode" : "AU",
+      "stateCode" : "AU-NSW"
+    },
+    "geoCode" : {
+      "latitude" : -30.43957,
+      "longitude" : 152.97115
+    }
+  }, {
+    "type" : "location",
+    "subType" : "city",
+    "name" : "West Raleigh",
+    "address" : {
+      "countryCode" : "US",
+      "stateCode" : "US-NC"
+    },
+    "geoCode" : {
+      "latitude" : 35.78682,
+      "longitude" : -78.66389
+    }
+  }, {
+    "type" : "location",
+    "subType" : "city",
+    "name" : "Raleigh Hills",
+    "address" : {
+      "countryCode" : "US",
+      "stateCode" : "US-OR"
+    },
+    "geoCode" : {
+      "latitude" : 45.48067,
+      "longitude" : -122.76204
+    }
+  }, {
+    "type" : "location",
+    "subType" : "city",
+    "name" : "Raleigh",
+    "address" : {
+      "countryCode" : "US",
+      "stateCode" : "US-MS"
+    },
+    "geoCode" : {
+      "latitude" : 32.03349,
+      "longitude" : -89.52229
+    }
+  } ]
+}

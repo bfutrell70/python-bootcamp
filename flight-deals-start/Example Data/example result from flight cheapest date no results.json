@@ -1,0 +1,10 @@
+{
+    "errors": [
+        {
+            "status": 404,
+            "code": 1797,
+            "title": "NOT FOUND",
+            "detail": "No response found for this query"
+        }
+    ]
+}

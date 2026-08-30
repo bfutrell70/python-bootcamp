@@ -1,0 +1,7 @@
+[
+  {"city": "Paris", "iataCode": "TESTING", "id": 2, "lowestPrice": 54},
+  {"city": "Tokyo", "iataCode": "TESTING", "id": 3, "lowestPrice": 485},
+  {"city": "New York", "iataCode": "TESTING", "id": 4, "lowestPrice": 240},
+  {"city": "San Francisco", "iataCode": "TESTING", "id": 5, "lowestPrice": 260},
+  {"city": "Dublin", "iataCode": "TESTING", "id": 6, "lowestPrice": 378}
+]

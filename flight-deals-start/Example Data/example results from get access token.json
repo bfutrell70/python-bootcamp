@@ -1,0 +1,11 @@
+{
+    "type": "amadeusOAuth2Token",
+    "username": "bfutrel@gmail.com",
+    "application_name": "flight-deal-finder",
+    "client_id": "vc0xjYIzXV4hAsNpb09af7E0UTgf87zE",
+    "token_type": "Bearer",
+    "access_token": "wO5xM8TT5asKaaCC3WiubrPC3I6V",
+    "expires_in": 1799,
+    "state": "approved",
+    "scope": ""
+}
