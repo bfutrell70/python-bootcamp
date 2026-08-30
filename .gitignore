@@ -1,0 +1,16 @@
+# Python virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# PyCharm / JetBrains IDE settings
+.idea/
+
+# Python build artifacts and caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
