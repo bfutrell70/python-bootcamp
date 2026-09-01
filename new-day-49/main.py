@@ -27,6 +27,10 @@ ACCOUNT_PASSWORD = 'Iw@nnaRipped!'
 GYM_URL = 'https://appbrewery.github.io/gym/'
 CLASS_SCHEDULE_URL = 'https://appbrewery.github.io/gym/schedule/'
 
+new_bookings = 0
+waitlists_joined = 0
+already_booked_waitlisted = 0
+
 """
 get the day of week from the date string
 :param date: string containing the date
@@ -55,6 +59,7 @@ def is_date_tuesday(date: str):
 
 # configure Selenium
 chrome_options = webdriver.ChromeOptions()
+# if True must close Chrome manually before the script is re-run
 chrome_options.add_experimental_option("detach", True)
 
 # have Selenium create its own user profile
@@ -104,18 +109,6 @@ submit_button.click()
 wait = WebDriverWait(driver, timeout = 10).until(EC.url_changes(current_webpage))
 
 # find the next Tuesday 6pm class (any type - Yoga, Spin, or HIIT)
-"""
-markup for days
-div id = "day-group-today-(thu,-aug-20)"        [container for classes for the day]
-    h2 id = "day-title-today-(thu,-aug-20)"     [name of date]
-    div id = "class-card-hiit-2026-08-20-0900"  [card representing a single exercise class]
-div id = "day-group-tomorrow-(fri,-aug-21)"
-    h2 id = "day-title-tomorrow-(fri,-aug-21)"
-    div id = "class-card-yoga-2026-08-22-0700"
-div id = "day-group-sat,-aug-22"
-    h2 id = "day-title-sat,-aug-22"
-    div id = "class-card-yoga-2026-08-22-0700"
-"""
 
 # # --- approach 1 - get the div elements representing each day, find the one for Tuesday.
 # # get div elements representing each day
@@ -137,7 +130,6 @@ div id = "day-group-sat,-aug-22"
 # --- approach 2 - get the div elements representing each class, then search parents to find the date
 # --- this method appears to be what the hints in the section are pointing to
 # get div elements representing each class
-print('--- finding date by getting class containers')
 
 """
 find the ID of the container containing Tuesday classes
@@ -150,21 +142,13 @@ def find_tuesday_div():
     for class_cards_index in range(len(class_cards)):
         card = class_cards[class_cards_index]
 
-        # get ID of the exercise class div
         class_card_id = card.get_attribute("id")
         if class_card_id is not None:
-            # Without something limiting the search results for ancestors, any element containing
-            # the class card div will be returned.
-            # The element in index 0 will be the highest-level element matching the search criteria.
-            # The element in the highest index will be the element that directly contains the specified element.
+            # Within the div element, there is an H2 tag with an ID in the format
+            # 'day-title-<day of week>,-<month>-<day of month>'
+            xpath = f"//div[@id='{class_card_id}']/ancestor::div[contains(@id, 'day-group-')]"
+            container = driver.find_element(By.XPATH, xpath)
 
-            # We want the last index, which is the div element containing the classes for a day.
-            # Within the div element, there is an H2 tag with a class of 'Schedule_dayTitle__YBybs'
-            # and an ID in the format 'day-title-<day of week>,-<month>-<day of month>'
-            xpath = f"//div[@id='{class_card_id}']/ancestor::div"
-            ancestors = driver.find_elements(By.XPATH, xpath)
-
-            container = ancestors[-1]
             h2_element = container.find_element(By.CSS_SELECTOR, 'h2')
 
             # day text within the H2 tag is in the format '<day of week (len=3)>, <month (len=3)> <day of month>'
@@ -193,13 +177,9 @@ def find_6pm_class_div(day_container_id):
         class_card = class_cards[class_card_index]
         class_time = class_card.find_element(By.CSS_SELECTOR, 'p[id^="class-time-"]')
 
-        try:
-            # raises a ValueError if the search text is not found
-            if class_time.text.index("6:00 PM") != -1:
-                class_div_id = class_cards[class_card_index].get_attribute("id")
-                break
-        except ValueError:
-            pass
+        if "6:00 PM" in class_time.text:
+            class_div_id = class_cards[class_card_index].get_attribute("id")
+            break
 
     return class_div_id
 
@@ -227,6 +207,7 @@ def exercise_date(class_div_id):
     return header_date_text
 
 def book_class(class_div_id):
+    global new_bookings, already_booked_waitlisted, waitlists_joined
     exercise_class_div = driver.find_element(By.CSS_SELECTOR, f'div[id="{class_div_id}"]')
     book_button = exercise_class_div.find_element(By.CSS_SELECTOR, 'button[id^="book-button-"]')
 
@@ -236,13 +217,26 @@ def book_class(class_div_id):
     if book_button.text != "Booked":
         book_button.click()
         print(f"✓ Booked: {class_name} on {class_date}")
+        new_bookings += 1
     elif book_button.text == "Join Waitlist":
         print(f"✓ Joined waitlist for: {class_name} on {class_date}")
+        waitlists_joined += 1
     elif book_button.text == "Waitlisted":
         print(f"✓ Already on waitlist: {class_name} on {class_date}")
+        already_booked_waitlisted += 1
     elif book_button.text == "Booked":
         print(f"✓ Already booked: {class_name} on {class_date}")
+        already_booked_waitlisted += 1
+
+def print_summary():
+    print("\n--- BOOKING SUMMARY ---")
+    print(f"Classes booked: {new_bookings}")
+    print(f"Waitlists joined: {waitlists_joined}")
+    print(f"Already booked/waitlisted: {already_booked_waitlisted}")
+    print(f"Total Tuesday 6pm classes processed: {new_bookings + waitlists_joined + already_booked_waitlisted}")
+
 
 tuesday_div = find_tuesday_div()
 class_div = find_6pm_class_div(tuesday_div)
 book_class(class_div)
+print_summary()
