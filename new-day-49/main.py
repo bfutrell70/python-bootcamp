@@ -56,7 +56,6 @@ def is_date_tuesday(date: str):
 
     return False
 
-
 # configure Selenium
 chrome_options = webdriver.ChromeOptions()
 # if True must close Chrome manually before the script is re-run
