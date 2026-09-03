@@ -1,5 +1,8 @@
 """
-Make changes for Tuesday or Thursday in this file
+Make changes for step 6 in this file
+- book EVERY Tuesday AND Thursday 6pm class
+- keep track of all classes processed
+- print a detailed list of what happened
 """
 
 import os
@@ -35,42 +38,7 @@ new_bookings = 0
 waitlists_joined = 0
 already_booked_waitlisted = 0
 
-"""
-get the day of week from the date string
-:param date: string containing the date
-:returns day of week in lower case
-"""
-def get_day_of_week(date: str):
-    # the date could be encased in parentheses if the date is today or tomorrow
-    # today: 'Today (<day of week>, <month> <day of month>)'
-    # tomorrow: 'Tomorrow (<day of week>, <month> <day of month>)'
-    trimmed_date = date.replace('Today (', '').replace('Tomorrow (', '')
 
-    dow = trimmed_date.lower()[0:3]
-    return dow
-
-"""
-determine if the day is Tuesday
-:param date: string containing the day of week
-:returns True if the day of week is Tuesday, False if not
-"""
-def is_date_tuesday(date: str):
-    if date == 'tue':
-        return True
-
-    return False
-
-"""
-determine if the day is in the list of days
-:param date: string containing day of week
-:param days_of_week: list of days of week
-:returns True if day of week is in days_of_week, False if not
-"""
-def does_date_match(date: str, days_of_week):
-    if date in days_of_week:
-        return True
-
-    return False
 
 
 # configure Selenium
@@ -89,6 +57,43 @@ driver = webdriver.Chrome(chrome_options)
 driver.get(GYM_URL)
 
 """
+get the day of week from the date string
+:param date: string containing the date
+:returns three-letter day of week in lower case
+"""
+def get_day_of_week(date: str):
+    # the date could be encased in parentheses if the date is today or tomorrow
+    # today: 'Today (<day of week>, <month> <day of month>)'
+    # tomorrow: 'Tomorrow (<day of week>, <month> <day of month>)'
+    trimmed_date = date.replace('Today (', '').replace('Tomorrow (', '')
+
+    dow = trimmed_date.lower()[0:3]
+    return dow
+
+"""
+determine if the day is Tuesday
+:param date: string containing the day of week
+:returns True if the day of week is Tuesday, False if not
+"""
+# def is_date_tuesday(date: str):
+#     if date == 'tue':
+#         return True
+#
+#     return False
+
+"""
+determine if the day is in the list of days
+:param date: string containing day of week
+:param days_of_week: list of days of week
+:returns True if day of week is in days_of_week, False if not
+"""
+def does_date_match(date: str, days_of_week):
+    if date in days_of_week:
+        return True
+
+    return False
+
+"""
 step 2
 - click the login button
     - ID 'login-button'
@@ -102,27 +107,31 @@ step 2
     - https://appbrewery.github.io/gym/schedule/
 """
 
-login_button = driver.find_element(By.CSS_SELECTOR, '#login-button')
-login_button.click()
+"""
+log into the site
+"""
+def login():
+    login_button = driver.find_element(By.CSS_SELECTOR, '#login-button')
+    login_button.click()
 
-# Login page - enter the username/password and click Submit
-email_input = driver.find_element(By.CSS_SELECTOR, '#email-input')
+    # Login page - enter the username/password and click Submit
+    email_input = driver.find_element(By.CSS_SELECTOR, '#email-input')
 
-wait = WebDriverWait(driver, timeout = 2)
-wait.until(lambda _ : email_input.is_displayed())
+    wait = WebDriverWait(driver, timeout = 2)
+    wait.until(lambda _ : email_input.is_displayed())
 
-email_input.send_keys(ACCOUNT_EMAIL)
+    email_input.send_keys(ACCOUNT_EMAIL)
 
-password_input = driver.find_element(By.CSS_SELECTOR, '#password-input')
-password_input.send_keys(ACCOUNT_PASSWORD)
+    password_input = driver.find_element(By.CSS_SELECTOR, '#password-input')
+    password_input.send_keys(ACCOUNT_PASSWORD)
 
-current_webpage = driver.current_url
+    current_webpage = driver.current_url
 
-submit_button = driver.find_element(By.CSS_SELECTOR, '#submit-button')
-submit_button.click()
+    submit_button = driver.find_element(By.CSS_SELECTOR, '#submit-button')
+    submit_button.click()
 
-# once logged in, redirected to the class schedule page
-wait = WebDriverWait(driver, timeout = 10).until(EC.url_changes(current_webpage))
+    # once logged in, redirected to the class schedule page
+    wait = WebDriverWait(driver, timeout = 10).until(EC.url_changes(current_webpage))
 
 # find the next Tuesday 6pm class (any type - Yoga, Spin, or HIIT)
 
@@ -147,37 +156,37 @@ wait = WebDriverWait(driver, timeout = 10).until(EC.url_changes(current_webpage)
 # --- this method appears to be what the hints in the section are pointing to
 # get div elements representing each class
 
-"""
-find the ID of the container containing Tuesday classes
-returns: ID of the div element that contains the classes held on Tuesday 
-"""
-def find_tuesday_div():
-    tuesday_div_id = ''
-
-    class_cards = driver.find_elements(By.CSS_SELECTOR, 'div[id^="class-card-"]')
-    for class_cards_index in range(len(class_cards)):
-        card = class_cards[class_cards_index]
-
-        class_card_id = card.get_attribute("id")
-        if class_card_id is not None:
-            # Within the div element, there is an H2 tag with an ID in the format
-            # 'day-title-<day of week>,-<month>-<day of month>'
-            xpath = f"//div[@id='{class_card_id}']/ancestor::div[contains(@id, 'day-group-')]"
-            container = driver.find_element(By.XPATH, xpath)
-
-            h2_element = container.find_element(By.CSS_SELECTOR, 'h2')
-
-            # day text within the H2 tag is in the format '<day of week (len=3)>, <month (len=3)> <day of month>'
-            day = h2_element.text
-            day_of_week = get_day_of_week(day)
-            if is_date_tuesday(day_of_week) == True:
-                tuesday_div_id = container.get_attribute("id")
-                break
-
-        if tuesday_div_id != '':
-            break
-
-    return tuesday_div_id
+# """
+# find the ID of the container containing Tuesday classes
+# returns: ID of the div element that contains the classes held on Tuesday
+# """
+# def find_tuesday_div():
+#     tuesday_div_id = ''
+#
+#     class_cards = driver.find_elements(By.CSS_SELECTOR, 'div[id^="class-card-"]')
+#     for class_cards_index in range(len(class_cards)):
+#         card = class_cards[class_cards_index]
+#
+#         class_card_id = card.get_attribute("id")
+#         if class_card_id is not None:
+#             # Within the div element, there is an H2 tag with an ID in the format
+#             # 'day-title-<day of week>,-<month>-<day of month>'
+#             xpath = f"//div[@id='{class_card_id}']/ancestor::div[contains(@id, 'day-group-')]"
+#             container = driver.find_element(By.XPATH, xpath)
+#
+#             h2_element = container.find_element(By.CSS_SELECTOR, 'h2')
+#
+#             # day text within the H2 tag is in the format '<day of week (len=3)>, <month (len=3)> <day of month>'
+#             day = h2_element.text
+#             day_of_week = get_day_of_week(day)
+#             if is_date_tuesday(day_of_week) == True:
+#                 tuesday_div_id = container.get_attribute("id")
+#                 break
+#
+#         if tuesday_div_id != '':
+#             break
+#
+#     return tuesday_div_id
 
 """
 find IDs of div elements for the specified days of the week
@@ -243,12 +252,15 @@ def exercise_date(class_div_id):
     header_date = ancestor.find_element(By.CSS_SELECTOR, 'h2')
     header_date_text = header_date.text
 
-    try:
-        if header_date_text.index("(") != -1:
-            # either today or tomorrow - has parenthesis around the data
-            header_date_text = header_date_text[header_date_text.index("(")+1:header_date_text.index(")")]
-    except ValueError:
-        pass
+    if "(" in header_date_text:
+        header_date_text = header_date_text[header_date_text.index("(") + 1:header_date_text.index(")")]
+
+    # try:
+    #     if header_date_text.index("(") != -1:
+    #         # either today or tomorrow - has parenthesis around the data
+    #         header_date_text = header_date_text[header_date_text.index("(")+1:header_date_text.index(")")]
+    # except ValueError:
+    #     pass
 
     return header_date_text
 
@@ -282,7 +294,8 @@ def print_summary():
     print(f"Total Tuesday 6pm classes processed: {new_bookings + waitlists_joined + already_booked_waitlisted}")
 
 
-tuesday_div = find_tuesday_div()
+login()
+tuesday_and_thursday_divs = find_day_divs(['tue', 'thu'])
 class_div = find_6pm_class_div(tuesday_div)
 book_class(class_div)
 print_summary()
