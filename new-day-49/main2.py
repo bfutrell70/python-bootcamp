@@ -6,15 +6,9 @@ Make changes for step 6 in this file
 """
 
 import os
-
-import selenium.common
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
-import time
-
 from selenium.webdriver.support.wait import WebDriverWait
 
 """
@@ -37,6 +31,7 @@ CLASS_SCHEDULE_URL = 'https://appbrewery.github.io/gym/schedule/'
 new_bookings = 0
 waitlists_joined = 0
 already_booked_waitlisted = 0
+detailed_class_list = []
 
 
 
@@ -69,17 +64,6 @@ def get_day_of_week(date: str):
 
     dow = trimmed_date.lower()[0:3]
     return dow
-
-"""
-determine if the day is Tuesday
-:param date: string containing the day of week
-:returns True if the day of week is Tuesday, False if not
-"""
-# def is_date_tuesday(date: str):
-#     if date == 'tue':
-#         return True
-#
-#     return False
 
 """
 determine if the day is in the list of days
@@ -156,42 +140,10 @@ def login():
 # --- this method appears to be what the hints in the section are pointing to
 # get div elements representing each class
 
-# """
-# find the ID of the container containing Tuesday classes
-# returns: ID of the div element that contains the classes held on Tuesday
-# """
-# def find_tuesday_div():
-#     tuesday_div_id = ''
-#
-#     class_cards = driver.find_elements(By.CSS_SELECTOR, 'div[id^="class-card-"]')
-#     for class_cards_index in range(len(class_cards)):
-#         card = class_cards[class_cards_index]
-#
-#         class_card_id = card.get_attribute("id")
-#         if class_card_id is not None:
-#             # Within the div element, there is an H2 tag with an ID in the format
-#             # 'day-title-<day of week>,-<month>-<day of month>'
-#             xpath = f"//div[@id='{class_card_id}']/ancestor::div[contains(@id, 'day-group-')]"
-#             container = driver.find_element(By.XPATH, xpath)
-#
-#             h2_element = container.find_element(By.CSS_SELECTOR, 'h2')
-#
-#             # day text within the H2 tag is in the format '<day of week (len=3)>, <month (len=3)> <day of month>'
-#             day = h2_element.text
-#             day_of_week = get_day_of_week(day)
-#             if is_date_tuesday(day_of_week) == True:
-#                 tuesday_div_id = container.get_attribute("id")
-#                 break
-#
-#         if tuesday_div_id != '':
-#             break
-#
-#     return tuesday_div_id
-
 """
 find IDs of div elements for the specified days of the week
 :param days_of_week - list of strings containing the days of the week to find (['mon', 'tue', etc.])
-:returns - list of div elements containing classes for the specified days of the week
+:returns - list of div elements containing IDs for the specified days of the week
 """
 def find_day_divs(days_of_week):
     day_div_ids = []
@@ -213,30 +165,31 @@ def find_day_divs(days_of_week):
             day = h2_element.text
             day_of_week = get_day_of_week(day)
             if does_date_match(day_of_week, days_of_week) == True:
-                day_div_ids.append(container.get_attribute("id"))
-                break
+                if container.get_attribute("id") not in day_div_ids:
+                    day_div_ids.append(container.get_attribute("id"))
 
     return day_div_ids
 
 """
-:param day_container - element containing classes to search through
-:returns: string containing the ID of the div element for the class
+get all classes starting at 6:00 from the specified div IDs
+:param day_container_ids - list of strings containing IDs of divs
+:returns list of strings containing IDs of classes that start at 6:00
 """
-def find_6pm_class_div(day_container_id):
-    class_div_id = ''
+def find_6pm_class_divs(day_container_ids):
+    class_div_ids = []
 
-    day_container = driver.find_element(By.CSS_SELECTOR, f'div[id="{day_container_id}"]')
-    class_cards = day_container.find_elements(By.CSS_SELECTOR, 'div[id^="class-card-"]')
+    for id in day_container_ids:
+        day_container = driver.find_element(By.CSS_SELECTOR, f'div[id="{id}"]')
+        class_cards = day_container.find_elements(By.CSS_SELECTOR, 'div[id^="class-card-"]')
 
-    for class_card_index in range(len(class_cards)):
-        class_card = class_cards[class_card_index]
-        class_time = class_card.find_element(By.CSS_SELECTOR, 'p[id^="class-time-"]')
+        for class_card_index in range(len(class_cards)):
+            class_card = class_cards[class_card_index]
+            class_time = class_card.find_element(By.CSS_SELECTOR, 'p[id^="class-time-"]')
 
-        if "6:00 PM" in class_time.text:
-            class_div_id = class_cards[class_card_index].get_attribute("id")
-            break
+            if "6:00 PM" in class_time.text:
+                class_div_ids.append(class_cards[class_card_index].get_attribute("id"))
 
-    return class_div_id
+    return class_div_ids
 
 def exercise_class_name(class_div_id):
     exercise_class_div = driver.find_element(By.CSS_SELECTOR, f'div[id="{class_div_id}"]')
@@ -255,47 +208,50 @@ def exercise_date(class_div_id):
     if "(" in header_date_text:
         header_date_text = header_date_text[header_date_text.index("(") + 1:header_date_text.index(")")]
 
-    # try:
-    #     if header_date_text.index("(") != -1:
-    #         # either today or tomorrow - has parenthesis around the data
-    #         header_date_text = header_date_text[header_date_text.index("(")+1:header_date_text.index(")")]
-    # except ValueError:
-    #     pass
-
     return header_date_text
 
-def book_class(class_div_id):
-    global new_bookings, already_booked_waitlisted, waitlists_joined
-    exercise_class_div = driver.find_element(By.CSS_SELECTOR, f'div[id="{class_div_id}"]')
-    book_button = exercise_class_div.find_element(By.CSS_SELECTOR, 'button[id^="book-button-"]')
+def book_classes(class_div_ids):
+    global new_bookings, already_booked_waitlisted, waitlists_joined, detailed_class_list
 
-    class_name = exercise_class_name(class_div_id)
-    class_date = exercise_date(class_div_id)
+    for class_div_id in class_div_ids:
+        exercise_class_div = driver.find_element(By.CSS_SELECTOR, f'div[id="{class_div_id}"]')
+        book_button = exercise_class_div.find_element(By.CSS_SELECTOR, 'button[id^="book-button-"]')
 
-    if book_button.text != "Booked":
-        book_button.click()
-        print(f"✓ Booked: {class_name} on {class_date}")
-        new_bookings += 1
-    elif book_button.text == "Join Waitlist":
-        print(f"✓ Joined waitlist for: {class_name} on {class_date}")
-        waitlists_joined += 1
-    elif book_button.text == "Waitlisted":
-        print(f"✓ Already on waitlist: {class_name} on {class_date}")
-        already_booked_waitlisted += 1
-    elif book_button.text == "Booked":
-        print(f"✓ Already booked: {class_name} on {class_date}")
-        already_booked_waitlisted += 1
+        class_name = exercise_class_name(class_div_id)
+        class_date = exercise_date(class_div_id)
+
+        if book_button.text != "Booked":
+            book_button.click()
+            print(f"✓ Booked: {class_name} on {class_date}")
+            new_bookings += 1
+            detailed_class_list.append(f"[New Booking] {class_name} on {class_date}")
+        elif book_button.text == "Join Waitlist":
+            print(f"✓ Joined waitlist for: {class_name} on {class_date}")
+            waitlists_joined += 1
+            detailed_class_list.append(f"[New Waitlist] {class_name} on {class_date}")
+        elif book_button.text == "Waitlisted":
+            print(f"✓ Already on waitlist: {class_name} on {class_date}")
+            already_booked_waitlisted += 1
+        elif book_button.text == "Booked":
+            print(f"✓ Already booked: {class_name} on {class_date}")
+            already_booked_waitlisted += 1
 
 def print_summary():
+    global detailed_class_list
     print("\n--- BOOKING SUMMARY ---")
     print(f"Classes booked: {new_bookings}")
     print(f"Waitlists joined: {waitlists_joined}")
     print(f"Already booked/waitlisted: {already_booked_waitlisted}")
-    print(f"Total Tuesday 6pm classes processed: {new_bookings + waitlists_joined + already_booked_waitlisted}")
+    print(f"Total Tuesday and Thursday 6pm classes processed: {new_bookings + waitlists_joined + already_booked_waitlisted}")
+
+    if len(detailed_class_list) > 0:
+        print("\n--- DETAILED CLASS LIST ---")
+        for detail in detailed_class_list:
+            print(detail)
 
 
 login()
 tuesday_and_thursday_divs = find_day_divs(['tue', 'thu'])
-class_div = find_6pm_class_div(tuesday_div)
-book_class(class_div)
+class_divs = find_6pm_class_divs(tuesday_and_thursday_divs)
+book_classes(class_divs)
 print_summary()
