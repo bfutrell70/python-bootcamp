@@ -221,7 +221,7 @@ def exercise_class_name(class_div_id):
     return class_name.text
 
 
-def exercise_date(class_div_id):
+def exercise_date(class_div_id, strip_date = False):
     exercise_class_div = driver.find_element(By.CSS_SELECTOR, f'div[id="{class_div_id}"]')
     # the h2 element is not within the exercise div element, but its ancestor div
     xpath = f"//div[@id='{class_div_id}']/ancestor::div"
@@ -230,8 +230,9 @@ def exercise_date(class_div_id):
     header_date = ancestor.find_element(By.CSS_SELECTOR, 'h2')
     header_date_text = header_date.text
 
-    if "(" in header_date_text:
-        header_date_text = header_date_text[header_date_text.index("(") + 1:header_date_text.index(")")]
+    if strip_date:
+        if "(" in header_date_text:
+            header_date_text = header_date_text[header_date_text.index("(") + 1:header_date_text.index(")")]
 
     return header_date_text
 
@@ -259,7 +260,6 @@ def book_classes(class_div_ids):
                     waitlisted=False
                 )
             )
-            # detailed_class_list.append(f"[New Booking] {class_name} on {class_date}")
         elif book_button.text == "Join Waitlist":
             print(f"✓ Joined waitlist for: {class_name} on {class_date}")
             waitlists_joined += 1
@@ -271,7 +271,6 @@ def book_classes(class_div_ids):
                     waitlisted=True
                 )
             )
-            # detailed_class_list.append(f"[New Waitlist] {class_name} on {class_date}")
         elif book_button.text == "Waitlisted":
             print(f"✓ Already on waitlist: {class_name} on {class_date}")
             already_booked_waitlisted += 1
