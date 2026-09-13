@@ -18,6 +18,7 @@ import os
 from selenium import webdriver
 from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from class_booking_info import ClassBookingInfo
@@ -257,7 +258,8 @@ def book_classes(class_div_ids):
                     name=class_name,
                     date=class_date,
                     time="6:00 PM",
-                    waitlisted=False
+                    waitlisted=False,
+                    verified=False
                 )
             )
         elif book_button.text == "Join Waitlist":
@@ -268,7 +270,8 @@ def book_classes(class_div_ids):
                     name=class_name,
                     date=class_date,
                     time="6:00 PM",
-                    waitlisted=True
+                    waitlisted=True,
+                    verified=False
                 )
             )
         elif book_button.text == "Waitlisted":
@@ -318,13 +321,26 @@ def verify_bookings():
     -- class name within h3 tag with an ID starting with 'waitlist-class-name-waitlist_'
     -- class name ends with '(Waitlist)'
     """
-    global driver
+    global driver, detailed_class_list
     driver.get(BOOKING_SUMMARY_URL)
+
+    h3_booking_tags: list[WebElement] = []
+    h3_waitlist_tags: list[WebElement] = []
+
+    booked_detail = [l for l in detailed_class_list if l.waitlisted == False]
+    waitlisted_detail = [l for l in detailed_class_list if l.waitlisted == True]
 
     # verify bookings
     try:
         booked_div = driver.find_element(By.CSS_SELECTOR, '#confirmed-bookings-section')
-        booked_items = booked_div.find_elements(By.CSS_SELECTOR, 'div[id^="booking-card-booking_"]')
+        h3_booking_tags = booked_div.find_elements(By.CSS_SELECTOR, 'h3[id^="booking-class-name-booking_"]')
+
+        for detail in booked_detail:
+            for tag in h3_booking_tags:
+                if detail.name in tag.text:
+                    detail.verified = True
+                    break
+
     except NoSuchElementException:
         # booked classes aren't on the page
         pass
@@ -332,12 +348,35 @@ def verify_bookings():
     # verify waitlist signups
     try:
         waitlist_div = driver.find_element(By.CSS_SELECTOR, '#waitlist-section')
-        waitlist_items = waitlist_div.find_elements(By.CSS_SELECTOR, 'div[id^="waitlist-card-waitlist_"]')
+        h3_waitlist_tags = waitlist_div.find_elements(By.CSS_SELECTOR, 'h3[id^="waitlist-class-name-waitlist_"]')
+
+        for detail in waitlisted_detail:
+            for tag in h3_waitlist_tags:
+                if detail.name in tag.text:
+                    detail.waitlisted = True
+                    break
+
     except NoSuchElementException:
         # waitlisted classes aren't on the page
         pass
 
-    pass
+    print("--- VERIFICATION RESULT ---")
+    # compare the number of bookings on the page against the list of
+    print(f"Expected bookings: {len(h3_booking_tags)}")
+    print(f"Found bookings: {len(booked_detail)}")
+    if len(h3_booking_tags) == len(booked_detail):
+        print(f"✅ SUCCESS: All bookings verified!")
+    else:
+        print(f"Missing: {len(booked_detail) - len(h3_booking_tags)} bookings")
+
+    print(f"Expected waitlistings: {len(h3_waitlist_tags)}")
+    print(f"Found waitlistings: {len(waitlisted_detail)}")
+    if len(h3_waitlist_tags) == len(waitlisted_detail):
+        print(f"✅ SUCCESS: All waitlistings verified!")
+    else:
+        print(f"Missing: {len(waitlisted_detail) - len(h3_waitlist_tags)} waitlistings")
+
+    print("end of verify_bookings()")
 
 
 # --------------------------------------------------------
@@ -347,3 +386,4 @@ tuesday_and_thursday_divs = find_day_divs(['tue', 'thu'])
 class_divs = find_6pm_class_divs(tuesday_and_thursday_divs)
 book_classes(class_divs)
 print_summary()
+verify_bookings()
