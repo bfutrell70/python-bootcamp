@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-
 @dataclass
 class ClassBookingInfo:
     """class for storing info for classes that are booked or waitlisted"""
@@ -8,3 +7,4 @@ class ClassBookingInfo:
     date: str
     time: str
     waitlisted: bool
+    verified: bool
