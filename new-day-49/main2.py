@@ -66,8 +66,6 @@ get the day of week from the date string
 :param date: string containing the date
 :returns three-letter day of week in lower case
 """
-
-
 def get_day_of_week(date: str):
     # the date could be encased in parentheses if the date is today or tomorrow
     # today: 'Today (<day of week>, <month> <day of month>)'
@@ -76,7 +74,6 @@ def get_day_of_week(date: str):
 
     dow = trimmed_date.lower()[0:3]
     return dow
-
 
 """
 determine if the day is in the list of days
@@ -110,8 +107,6 @@ step 2
 """
 log into the site
 """
-
-
 def login():
     login_button = driver.find_element(By.CSS_SELECTOR, '#login-button')
     login_button.click()
@@ -135,37 +130,11 @@ def login():
     # once logged in, redirected to the class schedule page
     wait = WebDriverWait(driver, timeout=10).until(EC.url_changes(current_webpage))
 
-
-# find the next Tuesday 6pm class (any type - Yoga, Spin, or HIIT)
-
-# # --- approach 1 - get the div elements representing each day, find the one for Tuesday.
-# # get div elements representing each day
-# # element 0 will be for the current date
-# print('--- finding date by getting day containers')
-# day_groups = driver.find_elements(By.CSS_SELECTOR, 'div[id^="day-group-"]')
-# for day_groups_index in range(len(day_groups)):
-#     day_group = day_groups[day_groups_index]
-#
-#     # get h2 element
-#     title = day_group.find_element(By.CSS_SELECTOR, 'h2')
-#
-#     # find the day in the element
-#     day_text = title.text
-#
-#     print(day_text)
-
-
-# --- approach 2 - get the div elements representing each class, then search parents to find the date
-# --- this method appears to be what the hints in the section are pointing to
-# get div elements representing each class
-
 """
 find IDs of div elements for the specified days of the week
 :param days_of_week - list of strings containing the days of the week to find (['mon', 'tue', etc.])
 :returns - list of div elements containing IDs for the specified days of the week
 """
-
-
 def find_day_divs(days_of_week):
     day_div_ids = []
 
@@ -197,8 +166,6 @@ get all classes starting at 6:00 from the specified div IDs
 :param day_container_ids - list of strings containing IDs of divs
 :returns list of strings containing IDs of classes that start at 6:00
 """
-
-
 def find_6pm_class_divs(day_container_ids):
     class_div_ids = []
 
@@ -303,8 +270,6 @@ def print_summary():
             message = message + f' {detail.name} on {detail.date}'
             print(message)
 
-
-
 """
 verify that the bookings made were completed
 """
@@ -312,13 +277,9 @@ def verify_bookings2():
     global driver, detailed_class_list
     driver.get(BOOKING_SUMMARY_URL)
 
-    # Wait for the page to fully load
-
     WebDriverWait(driver, 10).until(
         lambda d: d.execute_script("return document.readyState") == "complete"
     )
-
-    # print(detailed_class_list)
 
     if len(detailed_class_list) > 0:
         try:
@@ -327,18 +288,11 @@ def verify_bookings2():
             # get div elements representing each class booking and waitlist signups
             class_cards = driver.find_elements(By.CSS_SELECTOR, 'div[class^="MyBookings_bookingDetails_"]')
 
-            # print(f'class_cards: {len(class_cards)}')
 
             for class_item in detailed_class_list:
                 for class_card in class_cards:
-                    # get class name from h3 tag
                     class_name = class_card.find_element(By.CSS_SELECTOR, 'h3').text
-
-                    # get class date from first paragraph tag after the h3 tag
                     class_date = class_card.find_element(By.CSS_SELECTOR, 'p').text
-
-                    # print(f'class_card: "{class_name}" on "{class_date}"')
-                    # print(f'class_item: "{class_item.name}" on "{class_item.date}\n')
 
                     if class_item.name in class_name and class_item.date in class_date:
                         class_item.verified = True
@@ -360,85 +314,6 @@ def verify_bookings2():
 
     else:
         print(f"No new bookings or waitlist signups.")
-
-"""
-verify that the bookings made were completed
-"""
-# def verify_bookings():
-#     """
-#     on the bookings page, div ID 'confirmed-bookings-section' contains the confirmed bookings
-#     within a child div element
-#     - each booking has an ID starting with 'booking-card-booking_'
-#     -- class name within h3 tag with an ID starting with 'booking-class-name-booking_'
-#
-#     div ID 'waitlist-section' contains the confirmed waitlist signups within a child div element
-#     - each waitlist signup has an ID starting with 'waitlist-card-waitlist_'
-#     -- class name within h3 tag with an ID starting with 'waitlist-class-name-waitlist_'
-#     -- class name ends with '(Waitlist)'
-#     """
-#     global driver, detailed_class_list
-#     driver.get(BOOKING_SUMMARY_URL)
-#
-#     print(detailed_class_list)
-#
-#     # skip validation if no new bookings/waitlist signups
-#     if len(detailed_class_list) != 0:
-#         h3_booking_tags: list[WebElement] = []
-#         h3_waitlist_tags: list[WebElement] = []
-#
-#         booked_detail = [l for l in detailed_class_list if l.waitlisted == False]
-#         waitlisted_detail = [l for l in detailed_class_list if l.waitlisted == True]
-#
-#         # verify bookings
-#         try:
-#             booked_div = driver.find_element(By.CSS_SELECTOR, '#confirmed-bookings-section')
-#             h3_booking_tags = booked_div.find_elements(By.CSS_SELECTOR, 'h3[id^="booking-class-name-booking_"]')
-#
-#             for detail in booked_detail:
-#                 for tag in h3_booking_tags:
-#                     if detail.name in tag.text:
-#                         detail.verified = True
-#                         break
-#
-#         except NoSuchElementException:
-#             # booked classes aren't on the page
-#             pass
-#
-#         # verify waitlist signups
-#         try:
-#             waitlist_div = driver.find_element(By.CSS_SELECTOR, '#waitlist-section')
-#             h3_waitlist_tags = waitlist_div.find_elements(By.CSS_SELECTOR, 'h3[id^="waitlist-class-name-waitlist_"]')
-#
-#             for detail in waitlisted_detail:
-#                 for tag in h3_waitlist_tags:
-#                     if detail.name in tag.text:
-#                         detail.waitlisted = True
-#                         break
-#
-#         except NoSuchElementException:
-#             # waitlisted classes aren't on the page
-#             pass
-#
-#         print("--- VERIFICATION RESULT ---")
-#         # compare the number of bookings on the page against the list of
-#         print(f"Expected bookings: {len(h3_booking_tags)}")
-#         print(f"Found bookings: {len(booked_detail)}")
-#         if len(h3_booking_tags) == len(booked_detail):
-#             print(f"✅ SUCCESS: All bookings verified!")
-#         else:
-#             print(f"Missing: {len(booked_detail) - len(h3_booking_tags)} bookings")
-#
-#         print(f"Expected waitlistings: {len(h3_waitlist_tags)}")
-#         print(f"Found waitlistings: {len(waitlisted_detail)}")
-#         if len(h3_waitlist_tags) == len(waitlisted_detail):
-#             print(f"✅ SUCCESS: All waitlistings verified!")
-#         else:
-#             print(f"Missing: {len(waitlisted_detail) - len(h3_waitlist_tags)} waitlistings")
-#     else:
-#         print(f"No new bookings or waitlist signups.")
-#
-#     print("end of verify_bookings()")
-
 
 # --------------------------------------------------------
 
