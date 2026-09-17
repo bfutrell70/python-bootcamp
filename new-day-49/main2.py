@@ -82,27 +82,11 @@ determine if the day is in the list of days
 :returns True if day of week is in days_of_week, False if not
 """
 
-
 def does_date_match(date: str, days_of_week):
     if date in days_of_week:
         return True
 
     return False
-
-
-"""
-step 2
-- click the login button
-    - ID 'login-button'
-- fill in your email and password
-    - email input ID 'email-input'
-    - password input ID 'password-input'
-- submit the form
-    - submit button ID 'submit-button'
-- verify you're logged in by checking for the "Class Schedule" page
-    - once logged in, redirected to the class schedule page
-    - https://appbrewery.github.io/gym/schedule/
-"""
 
 """
 log into the site
