@@ -15,6 +15,7 @@ Make changes for step 7
 """
 
 import os
+import time
 from selenium import webdriver
 from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
@@ -189,10 +190,10 @@ def exercise_date(class_div_id, strip_date = False):
     return header_date_text
 
 
-def book_classes(class_div_ids):
-    global new_bookings, already_booked_waitlisted, waitlists_joined, detailed_class_list
+def book_classes():
+    global new_bookings, already_booked_waitlisted, waitlists_joined, detailed_class_list, class_divs
 
-    for class_div_id in class_div_ids:
+    for class_div_id in class_divs:
         exercise_class_div = driver.find_element(By.CSS_SELECTOR, f'div[id="{class_div_id}"]')
         book_button = exercise_class_div.find_element(By.CSS_SELECTOR, 'button[id^="book-button-"]')
 
@@ -299,12 +300,26 @@ def verify_bookings2():
     else:
         print(f"No new bookings or waitlist signups.")
 
+"""
+retry a function up to a set number of tries until it succeeds
+"""
+def retry(func, retries=7, description=None):
+    for i in range(retries):
+        print(f"Trying {description}. Attempt: {i + 1}")
+        try:
+            return func()
+        except TimeoutError:
+            if i == retries - 1:
+                raise
+            time.sleep(1)
+
 # --------------------------------------------------------
 
-login()
+retry(login, description="login")
 tuesday_and_thursday_divs = find_day_divs(['tue', 'thu'])
 class_divs = find_6pm_class_divs(tuesday_and_thursday_divs)
-book_classes(class_divs)
+retry(book_classes(), description="book classes")
+# book_classes(class_divs)
 print_summary()
 # verify_bookings()
 verify_bookings2()
