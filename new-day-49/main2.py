@@ -114,6 +114,7 @@ def login():
 
     wait.until(ec.presence_of_element_located((By.ID, "schedule-page")))
 
+
 """
 find IDs of div elements for the specified days of the week
 :param days_of_week - list of strings containing the days of the week to find (['mon', 'tue', etc.])
@@ -315,10 +316,11 @@ def retry(func, retries=7, description=None):
 # --------------------------------------------------------
 
 retry(login, description="login")
+
 tuesday_and_thursday_divs = find_day_divs(['tue', 'thu'])
 class_divs = find_6pm_class_divs(tuesday_and_thursday_divs)
-retry(book_classes(), description="book classes")
-# book_classes(class_divs)
-print_summary()
+
+retry(book_classes, description="book classes")
+# print_summary()
 # verify_bookings()
 verify_bookings2()
