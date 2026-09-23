@@ -16,11 +16,12 @@ Make changes for step 7
 
 import os
 import time
+
 from selenium import webdriver
 from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.wait import WebDriverWait
 from class_booking_info import ClassBookingInfo
 
@@ -42,6 +43,8 @@ GYM_URL = 'https://appbrewery.github.io/gym/'
 CLASS_SCHEDULE_URL = 'https://appbrewery.github.io/gym/schedule/'
 BOOKING_SUMMARY_URL = 'https://appbrewery.github.io/gym/my-bookings/'
 
+
+
 new_bookings = 0
 waitlists_joined = 0
 already_booked_waitlisted = 0
@@ -61,6 +64,8 @@ chrome_options.add_argument(f"--user-data-dir={user_data_dir}")
 # Set up the Chrome WebDriver (make sure chromedriver is installed and in PATH)
 driver = webdriver.Chrome(chrome_options)
 driver.get(GYM_URL)
+
+wait = WebDriverWait(driver, 2)
 
 """
 get the day of week from the date string
@@ -93,27 +98,21 @@ def does_date_match(date: str, days_of_week):
 log into the site
 """
 def login():
-    login_button = driver.find_element(By.CSS_SELECTOR, '#login-button')
-    login_button.click()
+    login_btn = wait.until(ec.element_to_be_clickable((By.ID, "login-button")))
+    login_btn.click()
 
-    # Login page - enter the username/password and click Submit
-    email_input = driver.find_element(By.CSS_SELECTOR, '#email-input')
-
-    wait = WebDriverWait(driver, timeout=2)
-    wait.until(lambda _: email_input.is_displayed())
-
+    email_input = wait.until(ec.presence_of_element_located((By.ID, "email-input")))
+    email_input.clear()
     email_input.send_keys(ACCOUNT_EMAIL)
 
     password_input = driver.find_element(By.CSS_SELECTOR, '#password-input')
+    password_input.clear()
     password_input.send_keys(ACCOUNT_PASSWORD)
-
-    current_webpage = driver.current_url
 
     submit_button = driver.find_element(By.CSS_SELECTOR, '#submit-button')
     submit_button.click()
 
-    # once logged in, redirected to the class schedule page
-    wait = WebDriverWait(driver, timeout=10).until(EC.url_changes(current_webpage))
+    wait.until(ec.presence_of_element_located((By.ID, "schedule-page")))
 
 """
 find IDs of div elements for the specified days of the week
@@ -154,8 +153,8 @@ get all classes starting at 6:00 from the specified div IDs
 def find_6pm_class_divs(day_container_ids):
     class_div_ids = []
 
-    for id in day_container_ids:
-        day_container = driver.find_element(By.CSS_SELECTOR, f'div[id="{id}"]')
+    for day_container_id in day_container_ids:
+        day_container = driver.find_element(By.CSS_SELECTOR, f'div[id="{day_container_id}"]')
         class_cards = day_container.find_elements(By.CSS_SELECTOR, 'div[id^="class-card-"]')
 
         for class_card_index in range(len(class_cards)):
