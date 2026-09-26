@@ -202,14 +202,14 @@ def book_classes():
     for class_div_id in class_divs:
         exercise_class_div = driver.find_element(By.CSS_SELECTOR, f'div[id="{class_div_id}"]')
         book_button = exercise_class_div.find_element(By.CSS_SELECTOR, 'button[id^="book-button-"]')
-        book_button_id = book_button.id
 
         class_name = exercise_class_name(class_div_id)
         class_date = exercise_date(class_div_id, True)
 
         if book_button.text == "Book Class":
-            retry(book_class(book_button), description="Booking")
-
+            # I think the "lambda" keyword is required due to the function passed to it having
+            # a parameter
+            retry(lambda: book_class(book_button), description="Booking")
             print(f"✓ Booked: {class_name} on {class_date}")
             new_bookings += 1
 
@@ -225,7 +225,9 @@ def book_classes():
             time.sleep(0.5)
 
         elif book_button.text == "Join Waitlist":
-            retry(book_class(book_button), description="Waitlisting")
+            # I think the "lambda" keyword is required due to the function passed to it having
+            # a parameter
+            retry(lambda: book_class(book_button), description="Waitlisting")
 
             print(f"✓ Joined waitlist for: {class_name} on {class_date}")
             waitlists_joined += 1
