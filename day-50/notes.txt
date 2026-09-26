@@ -1,0 +1,58 @@
+This section is to set up a Tinder bot. Alternatively, a site called TinDog can be used.
+
+my TinDog URL:
+(this URL is to manage settings for TinDog)
+https://app.100daysofpython.dev/services/tindog/u/ttoIBC8MQaOqUfSEEIRgL7zOLSuFxVpm
+
+main page
+https://app.100daysofpython.dev/services/tindog/welcome
+
+available from:
+https://app.100daysofpython.dev/dashboard
+
+Available login options are from:
+- FaceBark (uses the username and password created on https://app.100daysofpython.dev)
+
+
+After loading main page:
+- click on Log in button
+    - button element, class 'btn-tindog-login tindog-login-pill', type 'button'
+    - toggles a Bootstrap modal dialog
+- modal dialog to get started with FACEBARK, Goggle, or phone number
+    - div with an ID of 'login-modal'
+        - if displayed has a class of 'modal fade show'
+        - if hidden has a class of 'modal fade'
+    - FACEBARK button
+        - button element, class 'btn-facebark tindog-login-method', type 'button'
+        - clicking it opens a new window with the URL 'app.100daysofpython.dev/services/tindog/fb-login'
+            - input element, id 'email', type 'email'
+            - input element, id 'pass', type 'password'
+            - button element, type 'submit'
+
+    - once email/password are entered and submitted:
+        - popup appears
+            - div element, class 'popup-card'
+                - button element, class 'btn-primary', type 'submit', text 'Allow'
+        - another popup appears
+            - div class 'popup-overlay popup-notifications'
+                - button, class 'btn-primary', type 'submit', text 'Enable'
+                - button, class 'btn-secondary', type 'submit', text 'Not interested'
+            - click either button
+        - final popup appears
+            - div class 'popup-overlay popup-cookies'
+                - button, class 'btn-primary', type 'submit', text 'I Accept'
+
+Once logged in....
+-------------------
+URL 'https://app.100daysofpython.dev/services/tindog'
+
+Elements to look for
+- like button
+    - button element, class 'btn-like', type 'submit'
+- dislike button
+    - button element, class 'btn-nope', type 'submit'
+
+When you like a dog, and it's a match
+- Back to Tindog button
+    - anchor tag, class 'match-popup-link'
+
