@@ -3,6 +3,7 @@ import time
 
 from selenium import webdriver
 from selenium.common import NoSuchElementException, TimeoutException
+from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as ec
@@ -10,7 +11,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 TINDOG_URL = 'https://app.100daysofpython.dev/services/tindog/u/ttoIBC8MQaOqUfSEEIRgL7zOLSuFxVpm'
 ACCOUNT_EMAIL = 'bfutrel@gmail.com'
-ACCOUNT_PASSWORD = 'Python88!'
+ACCOUNT_PASSWORD = 'Python99!'
 
 # configure Selenium
 chrome_options = webdriver.ChromeOptions()
@@ -27,35 +28,41 @@ chrome_options.add_argument(f"--user-data-dir={user_data_dir}")
 driver = webdriver.Chrome(chrome_options)
 
 driver.get(TINDOG_URL)
+time.sleep(2)
 
 # step 2 - navigate to login page
 def login():
-    login_button = driver.find_element(By.CSS_SELECTOR, "button.btn-tindog-login")
-    login_button.click()
+    driver.find_element(By.CSS_SELECTOR, ".btn-tindog-login").click()
     time.sleep(0.5)
 
     # modal displayed, select 'Login with FACEBARK'
     try:
-        modal_dialog = driver.find_element(By.CSS_SELECTOR, "div.show")
-        login_with_facebark = modal_dialog.find_element(By.CSS_SELECTOR, "button.btn-facebark")
-        login_with_facebark.click()
+        # modal_dialog = driver.find_element(By.CSS_SELECTOR, "div.show")
+        driver.find_element(By.CSS_SELECTOR, ".btn-facebark").click()
         time.sleep(0.5)
 
+        # --- step 2 is concerned with navigating to the login page
         # a separate window will display with the FACEBARK login
-        # use XPATH to locate the login card
-        # facebark_login_card = driver.find_element(By.XPATH, "/html/body/div[2]/div")
-        #
-        # facebark_email = facebark_login_card.find_element(By.ID, 'email')
-        # facebark_email.clear()
-        # facebark_email.send_keys(ACCOUNT_EMAIL)
-        #
-        # facebark_password = facebark_login_card.find_element(By.ID, 'password')
-        # facebark_password.clear()
-        # facebark_password.send_keys(ACCOUNT_PASSWORD)
-        #
+        base_window = driver.window_handles[0]
+        fb_login_window = driver.window_handles[1]
+        driver.switch_to.window(fb_login_window)
+        print(driver.title)
+
+        facebark_login_card = driver.find_element(By.XPATH, "/html/body/div[2]/div")
+
+        facebark_email = facebark_login_card.find_element(By.ID, 'email')
+        facebark_email.send_keys(ACCOUNT_EMAIL)
+
+        facebark_password = facebark_login_card.find_element(By.ID, 'pass')
+        facebark_password.send_keys(ACCOUNT_PASSWORD)
+        facebark_password.send_keys(Keys.ENTER)
+
         # facebark_login = facebark_login_card.find_element(By.CSS_SELECTOR, 'button[type="submit"]')
         # facebark_login.click()
-        # time.sleep(0.5)
+        time.sleep(0.5)
+
+        driver.switch_to.window(base_window)
+        print(driver.title)
     except NoSuchElementException:
         print('no element found!')
         return False
