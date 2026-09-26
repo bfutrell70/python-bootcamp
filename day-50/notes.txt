@@ -56,3 +56,4 @@ When you like a dog, and it's a match
 - Back to Tindog button
     - anchor tag, class 'match-popup-link'
 
+- Tindog only allows 20 swipes per day

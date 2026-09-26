@@ -2,7 +2,7 @@ import os
 import time
 
 from selenium import webdriver
-from selenium.common import NoSuchElementException, TimeoutException
+from selenium.common import NoSuchElementException, TimeoutException, ElementClickInterceptedException
 from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
@@ -12,6 +12,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 TINDOG_URL = 'https://app.100daysofpython.dev/services/tindog/u/ttoIBC8MQaOqUfSEEIRgL7zOLSuFxVpm'
 ACCOUNT_EMAIL = 'bfutrel@gmail.com'
 ACCOUNT_PASSWORD = 'Python99!'
+SWIPES_ALLOWED = 20
 
 # configure Selenium
 chrome_options = webdriver.ChromeOptions()
@@ -40,8 +41,6 @@ def login():
         driver.find_element(By.CSS_SELECTOR, ".btn-facebark").click()
         time.sleep(0.5)
 
-        # --- step 2 is concerned with navigating to the login page
-        # a separate window will display with the FACEBARK login
         base_window = driver.window_handles[0]
         fb_login_window = driver.window_handles[1]
         driver.switch_to.window(fb_login_window)
@@ -77,9 +76,19 @@ def dismiss_popups():
     driver.find_element(By.XPATH, '/html/body/main/div/div/form/button').click()
     time.sleep(0.5)
 
-    pass
+def swipe():
+    for _ in range(SWIPES_ALLOWED):
+        try:
+            time.sleep(0.5)
+            driver.find_element(By.CSS_SELECTOR, ".btn-like").click()
+        except ElementClickInterceptedException:
+            # popup on top of like button - dismiss popup and try again
+            driver.find_element(By.CSS_SELECTOR, '.match-popup-link').click()
+            time.sleep(2)
+            driver.find_element(By.CSS_SELECTOR, ".btn-like").click()
 
 # ----------------------------------------
 login()
 dismiss_popups()
+swipe()
 
