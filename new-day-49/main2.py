@@ -18,7 +18,7 @@ import os
 import time
 
 from selenium import webdriver
-from selenium.common import NoSuchElementException
+from selenium.common import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as ec
@@ -42,8 +42,6 @@ ACCOUNT_PASSWORD = 'Iw@nnaRipped!'
 GYM_URL = 'https://appbrewery.github.io/gym/'
 CLASS_SCHEDULE_URL = 'https://appbrewery.github.io/gym/schedule/'
 BOOKING_SUMMARY_URL = 'https://appbrewery.github.io/gym/my-bookings/'
-
-
 
 new_bookings = 0
 waitlists_joined = 0
@@ -81,6 +79,7 @@ def get_day_of_week(date: str):
     dow = trimmed_date.lower()[0:3]
     return dow
 
+
 """
 determine if the day is in the list of days
 :param date: string containing day of week
@@ -94,6 +93,7 @@ def does_date_match(date: str, days_of_week):
 
     return False
 
+
 """
 log into the site
 """
@@ -105,11 +105,11 @@ def login():
     email_input.clear()
     email_input.send_keys(ACCOUNT_EMAIL)
 
-    password_input = driver.find_element(By.CSS_SELECTOR, '#password-input')
+    password_input = driver.find_element(By.ID, 'password-input')
     password_input.clear()
     password_input.send_keys(ACCOUNT_PASSWORD)
 
-    submit_button = driver.find_element(By.CSS_SELECTOR, '#submit-button')
+    submit_button = driver.find_element(By.ID, 'submit-button')
     submit_button.click()
 
     wait.until(ec.presence_of_element_located((By.ID, "schedule-page")))
@@ -176,6 +176,7 @@ def exercise_class_name(class_div_id):
 
 def exercise_date(class_div_id, strip_date = False):
     exercise_class_div = driver.find_element(By.CSS_SELECTOR, f'div[id="{class_div_id}"]')
+
     # the h2 element is not within the exercise div element, but its ancestor div
     xpath = f"//div[@id='{class_div_id}']/ancestor::div"
     ancestor = exercise_class_div.find_elements(By.XPATH, xpath)[-1]
@@ -196,42 +197,129 @@ def book_classes():
     for class_div_id in class_divs:
         exercise_class_div = driver.find_element(By.CSS_SELECTOR, f'div[id="{class_div_id}"]')
         book_button = exercise_class_div.find_element(By.CSS_SELECTOR, 'button[id^="book-button-"]')
+        book_button_id = book_button.id
 
         class_name = exercise_class_name(class_div_id)
         class_date = exercise_date(class_div_id, True)
 
-        if book_button.text != "Booked":
+        if book_button.text == "Book Class":
             book_button.click()
-            print(f"✓ Booked: {class_name} on {class_date}")
-            new_bookings += 1
 
-            detailed_class_list.append(
-                ClassBookingInfo(
-                    name=class_name,
-                    date=class_date,
-                    time="6:00 PM",
-                    waitlisted=False,
-                    verified=False
+            try:
+                error_div = exercise_class_div.find_element(By.CSS_SELECTOR, 'div[id^="class-error-"]')
+            except NoSuchElementException:
+                # book the class if the element wasn't found
+                print(f"✓ Booked: {class_name} on {class_date}")
+                new_bookings += 1
+
+                detailed_class_list.append(
+                    ClassBookingInfo(
+                        name=class_name,
+                        date=class_date,
+                        time="6:00 PM",
+                        waitlisted=False,
+                        verified=False
+                    )
                 )
-            )
+
+            # wait.until(ec.text_to_be_present_in_element((By.ID, book_button_id), "Booked"))
+            #
+            # print(f"✓ Booked: {class_name} on {class_date}")
+            # new_bookings += 1
+            #
+            # detailed_class_list.append(
+            #     ClassBookingInfo(
+            #         name=class_name,
+            #         date=class_date,
+            #         time="6:00 PM",
+            #         waitlisted=False,
+            #         verified=False
+            #     )
+            # )
         elif book_button.text == "Join Waitlist":
-            print(f"✓ Joined waitlist for: {class_name} on {class_date}")
-            waitlists_joined += 1
-            detailed_class_list.append(
-                ClassBookingInfo(
-                    name=class_name,
-                    date=class_date,
-                    time="6:00 PM",
-                    waitlisted=True,
-                    verified=False
+            book_button.click()
+
+            try:
+                error_div = exercise_class_div.find_element(By.CSS_SELECTOR, 'div[id^="class-error-"]')
+            except NoSuchElementException:
+                print(f"✓ Joined waitlist for: {class_name} on {class_date}")
+                waitlists_joined += 1
+                detailed_class_list.append(
+                    ClassBookingInfo(
+                        name=class_name,
+                        date=class_date,
+                        time="6:00 PM",
+                        waitlisted=True,
+                        verified=False
+                    )
                 )
-            )
-        elif book_button.text == "Waitlisted":
-            print(f"✓ Already on waitlist: {class_name} on {class_date}")
+
+            # wait.until(ec.text_to_be_present_in_element((By.ID, book_button_id), "Waitlisted"))
+            #
+            # print(f"✓ Joined waitlist for: {class_name} on {class_date}")
+            # waitlists_joined += 1
+            # detailed_class_list.append(
+            #     ClassBookingInfo(
+            #         name=class_name,
+            #         date=class_date,
+            #         time="6:00 PM",
+            #         waitlisted=True,
+            #         verified=False
+            #     )
+            # )
+
+        elif book_button.text == "Waitlisted" or book_button.text == "Booked":
+            print(f"✓ Already {book_button.text}: {class_name} on {class_date}")
             already_booked_waitlisted += 1
-        elif book_button.text == "Booked":
-            print(f"✓ Already booked: {class_name} on {class_date}")
-            already_booked_waitlisted += 1
+
+    # ---------------------------------------
+    # for class_div_id in class_divs:
+    #     exercise_class_div = driver.find_element(By.CSS_SELECTOR, f'div[id="{class_div_id}"]')
+    #     book_button = exercise_class_div.find_element(By.CSS_SELECTOR, 'button[id^="book-button-"]')
+    #     book_button_id = book_button.id
+    #
+    #     class_name = exercise_class_name(class_div_id)
+    #     class_date = exercise_date(class_div_id, True)
+    #
+    #     if book_button.text == "Book Class":
+    #         book_button.click()
+    #
+    #         wait.until(ec.text_to_be_present_in_element((By.ID, book_button_id), "Booked"))
+    #
+    #         print(f"✓ Booked: {class_name} on {class_date}")
+    #         new_bookings += 1
+    #
+    #         detailed_class_list.append(
+    #             ClassBookingInfo(
+    #                 name=class_name,
+    #                 date=class_date,
+    #                 time="6:00 PM",
+    #                 waitlisted=False,
+    #                 verified=False
+    #             )
+    #         )
+    #     elif book_button.text == "Join Waitlist":
+    #         book_button.click()
+    #
+    #         wait.until(ec.text_to_be_present_in_element((By.ID, book_button_id), "Waitlisted"))
+    #
+    #         print(f"✓ Joined waitlist for: {class_name} on {class_date}")
+    #         waitlists_joined += 1
+    #         detailed_class_list.append(
+    #             ClassBookingInfo(
+    #                 name=class_name,
+    #                 date=class_date,
+    #                 time="6:00 PM",
+    #                 waitlisted=True,
+    #                 verified=False
+    #             )
+    #         )
+    #     elif book_button.text == "Waitlisted":
+    #         print(f"✓ Already on waitlist: {class_name} on {class_date}")
+    #         already_booked_waitlisted += 1
+    #     elif book_button.text == "Booked":
+    #         print(f"✓ Already booked: {class_name} on {class_date}")
+    #         already_booked_waitlisted += 1
 
 
 def print_summary():
@@ -254,6 +342,7 @@ def print_summary():
 
             message = message + f' {detail.name} on {detail.date}'
             print(message)
+
 
 """
 verify that the bookings made were completed
@@ -300,6 +389,7 @@ def verify_bookings2():
     else:
         print(f"No new bookings or waitlist signups.")
 
+
 """
 retry a function up to a set number of tries until it succeeds
 """
@@ -308,10 +398,12 @@ def retry(func, retries=7, description=None):
         print(f"Trying {description}. Attempt: {i + 1}")
         try:
             return func()
-        except TimeoutError:
+        except TimeoutException:
             if i == retries - 1:
                 raise
             time.sleep(1)
+    return None
+
 
 # --------------------------------------------------------
 
@@ -323,4 +415,5 @@ class_divs = find_6pm_class_divs(tuesday_and_thursday_divs)
 retry(book_classes, description="book classes")
 # print_summary()
 # verify_bookings()
+
 verify_bookings2()
