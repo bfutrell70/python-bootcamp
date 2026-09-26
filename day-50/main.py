@@ -37,7 +37,6 @@ def login():
 
     # modal displayed, select 'Login with FACEBARK'
     try:
-        # modal_dialog = driver.find_element(By.CSS_SELECTOR, "div.show")
         driver.find_element(By.CSS_SELECTOR, ".btn-facebark").click()
         time.sleep(0.5)
 
@@ -57,8 +56,6 @@ def login():
         facebark_password.send_keys(ACCOUNT_PASSWORD)
         facebark_password.send_keys(Keys.ENTER)
 
-        # facebark_login = facebark_login_card.find_element(By.CSS_SELECTOR, 'button[type="submit"]')
-        # facebark_login.click()
         time.sleep(0.5)
 
         driver.switch_to.window(base_window)
@@ -67,8 +64,22 @@ def login():
         print('no element found!')
         return False
 
+def dismiss_popups():
+    # dismiss location popup (allow)
+    driver.find_element(By.XPATH, "/html/body/main/div/div/form/button").click()
+    time.sleep(0.5)
+
+    # dismiss notification popup (not interested)
+    driver.find_element(By.XPATH, "/html/body/main/div/div/form/button[2]").click()
+    time.sleep(0.5)
+
+    # dismiss cookies popup (accept)
+    driver.find_element(By.XPATH, '/html/body/main/div/div/form/button').click()
+    time.sleep(0.5)
+
+    pass
 
 # ----------------------------------------
 login()
-
+dismiss_popups()
 

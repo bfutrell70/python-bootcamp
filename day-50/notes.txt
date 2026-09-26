@@ -31,7 +31,7 @@ After loading main page:
 
     - once email/password are entered and submitted:
         - popup appears
-            - div element, class 'popup-card'
+            - div element, class 'popup-location'
                 - button element, class 'btn-primary', type 'submit', text 'Allow'
         - another popup appears
             - div class 'popup-overlay popup-notifications'
