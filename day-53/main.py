@@ -1,3 +1,5 @@
+from ZillowScraper import *
+
 """
 using Zillow to research house prices that fit a particular criteria for a client
 transfer data into a form, which will create a sheet in Google Sheets
@@ -43,3 +45,6 @@ Search results are contained within an unordered list
         - clean up the price to remove "+/mo"
         - clean up addresses - remove newlines, pipe symbols, and unnecessary whitespace 
 """
+
+zillow_scraper = ZillowScraper()
+zillow_scraper.scrape()
