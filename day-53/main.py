@@ -48,3 +48,4 @@ Search results are contained within an unordered list
 
 zillow_scraper = ZillowScraper()
 zillow_scraper.scrape()
+zillow_scraper.add_data_to_google_form()

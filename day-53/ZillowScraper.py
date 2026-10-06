@@ -1,3 +1,5 @@
+import time
+
 import requests
 from bs4 import BeautifulSoup
 import os
@@ -14,10 +16,23 @@ class ZillowScraper:
     def __init__(self):
         load_dotenv()
 
-        self.search_results = []
+        self.search_results: list[ResultData] = []
         self.zillow_url = os.environ['SOURCE_URL']
         self.google_form_url = os.environ['FORM_LINK']
-        pass
+        self.google_form_response_url = os.environ['FORM_RESPONSE_LINK']
+
+        chrome_options = webdriver.ChromeOptions()
+        # if True must close Chrome manually before the script is re-run
+        chrome_options.add_experimental_option("detach", True)
+
+        # have Selenium create its own user profile
+        user_data_dir = os.path.join(os.getcwd(), "chrome_profile")
+
+        # tell the Chrome driver to use the user data directory specified above
+        chrome_options.add_argument(f"--user-data-dir={user_data_dir}")
+
+        self.driver = webdriver.Chrome(chrome_options)
+
 
     """
     scrap Zillow search results, getting the price, address, and URL
@@ -36,7 +51,6 @@ class ZillowScraper:
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:140.0) Gecko/20100101 Firefox/140.0"
         }
 
-        load_dotenv()
         response = requests.get(self.zillow_url, headers=headers)
         page_data = response.text
 
@@ -79,8 +93,33 @@ class ZillowScraper:
     add data scraped from Zillow search results to a Google Form
     """
     def add_data_to_google_form(self):
-        load_dotenv()
+        wait = WebDriverWait(self.driver, 2)
 
+        # form inputs all have the classes 'whsOnd' and 'zHQkBf'
+        # If I search for all inputs with these classes I should get three results
+        # submit button is a div[aria-label='Submit']
 
+        # input order is address, price, link
+        for search_result in self.search_results:
+            self.driver.get(self.google_form_url)
+            time.sleep(2)
 
-        pass
+            ec.presence_of_element_located((By.CSS_SELECTOR, "input[type='text']"))
+
+            input_fields = self.driver.find_elements(By.CSS_SELECTOR, 'input[type="text"]')
+
+            input_fields[0].send_keys(search_result.location)
+            input_fields[1].send_keys(search_result.price)
+            input_fields[2].send_keys(search_result.link)
+
+            submit_button = self.driver.find_element(By.CSS_SELECTOR, 'div[aria-label="Submit"]')
+            submit_button.click()
+
+            # now on the formResponse page
+            self.driver.get(self.google_form_response_url)
+            time.sleep(1)
+
+            ec.presence_of_element_located((By.CSS_SELECTOR, 'a[href$="usp=form_confirm"'))
+            submit_another_response_link = self.driver.find_element(By.CSS_SELECTOR, 'a[href$="usp=form_confirm"')
+            submit_another_response_link.click()
+            time.sleep(2)
