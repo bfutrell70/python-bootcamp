@@ -99,10 +99,15 @@ class ZillowScraper:
         # If I search for all inputs with these classes I should get three results
         # submit button is a div[aria-label='Submit']
 
+        index = 0
+        search_result_count = len(self.search_results)
+
         # input order is address, price, link
         for search_result in self.search_results:
+            # navigate to the Google Forms page
             self.driver.get(self.google_form_url)
             time.sleep(2)
+            print(f"working on result index {index + 1} of {search_result_count}")
 
             ec.presence_of_element_located((By.CSS_SELECTOR, "input[type='text']"))
 
@@ -116,10 +121,19 @@ class ZillowScraper:
             submit_button.click()
 
             # now on the formResponse page
-            self.driver.get(self.google_form_response_url)
-            time.sleep(1)
+            # self.driver.get(self.google_form_response_url)
+            # time.sleep(1)
+            # print(self.driver.current_url)
 
             ec.presence_of_element_located((By.CSS_SELECTOR, 'a[href$="usp=form_confirm"'))
             submit_another_response_link = self.driver.find_element(By.CSS_SELECTOR, 'a[href$="usp=form_confirm"')
             submit_another_response_link.click()
             time.sleep(2)
+
+            index += 1
+
+    def export_search_results(self):
+        # Need to log into Google to export the results entered into the Google Form.
+        # Unable to log in on the "awnc_guest" Wi-Fi network or in a VM on the corporate network.
+        # Will try this at home and see if I have the same issues.
+        pass
