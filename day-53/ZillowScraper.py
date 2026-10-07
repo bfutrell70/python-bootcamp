@@ -11,7 +11,6 @@ from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
-from selenium.webdriver.firefox.service import Service
 
 class ZillowScraper:
     def __init__(self):
@@ -108,7 +107,8 @@ class ZillowScraper:
 
         # input order is address, price, link
         for search_result in self.search_results:
-            print(f"adding search result index {index} to google form")
+            self.driver.get(self.google_form_url)
+            time.sleep(2)
 
             ec.presence_of_element_located((By.CSS_SELECTOR, "input[type='text']"))
 
