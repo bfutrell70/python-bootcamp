@@ -26,26 +26,6 @@ once the data is retrieved, use Selenium to autofill in a Google Form
     one form per search result
     option to create a Google Sheet from the form data
 """
-
-FORM_LINK = "https://docs.google.com/forms/d/e/1FAIpQLSdqyOPYxw_6CEKBG032E6qTp7m7RuwcBeuME9YIWPEuPqHoxg/viewform?usp=dialog"
-
-"""
-search result markup
-
-Search results are contained within an unordered list
-    - each list item represents a single search result
-        - li.ListItem-c11n-8-84-3-StyledListCardWrapper
-    - in each list item is an article element that contains the data
-        - data is contained in div.StyledPropertyCardDataWrapper
-            - price:                                span.PropertyCardWrapper__StyledPriceLine
-            - address:                              address element, data-test attribute of 'property-card-addr'
-            - URL that the result is linked to:     a.StyledPropertyCardDataArea-anchor
-            
-    - after getting the data:
-        - clean up the price to remove "+/mo"
-        - clean up addresses - remove newlines, pipe symbols, and unnecessary whitespace 
-"""
-
 zillow_scraper = ZillowScraper()
 zillow_scraper.scrape()
 zillow_scraper.add_data_to_google_form()

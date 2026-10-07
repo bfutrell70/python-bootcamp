@@ -11,6 +11,7 @@ from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.firefox.service import Service
 
 class ZillowScraper:
     def __init__(self):
@@ -21,18 +22,22 @@ class ZillowScraper:
         self.google_form_url = os.environ['FORM_LINK']
         self.google_form_response_url = os.environ['FORM_RESPONSE_LINK']
 
-        chrome_options = webdriver.ChromeOptions()
-        # if True must close Chrome manually before the script is re-run
-        chrome_options.add_experimental_option("detach", True)
+        # chrome_options = webdriver.ChromeOptions()
+        # # if True must close Chrome manually before the script is re-run
+        # chrome_options.add_experimental_option("detach", True)
+        #
+        # # have Selenium create its own user profile
+        # user_data_dir = os.path.join(os.getcwd(), "chrome_profile")
+        #
+        # # tell the Chrome driver to use the user data directory specified above
+        # chrome_options.add_argument(f"--user-data-dir={user_data_dir}")
+        #
+        # self.driver = webdriver.Chrome(chrome_options)
 
-        # have Selenium create its own user profile
-        user_data_dir = os.path.join(os.getcwd(), "chrome_profile")
-
-        # tell the Chrome driver to use the user data directory specified above
-        chrome_options.add_argument(f"--user-data-dir={user_data_dir}")
-
-        self.driver = webdriver.Chrome(chrome_options)
-
+        # user_data_dir = os.path.join(os.getcwd(), "firefox_profile")
+        # service = webdriver.FirefoxService(service_args=['--profile-root', user_data_dir])
+        # self.driver = webdriver.Firefox(service=service)
+        self.driver = webdriver.Firefox()
 
     """
     scrap Zillow search results, getting the price, address, and URL
@@ -58,19 +63,15 @@ class ZillowScraper:
 
         results = soup.select('.StyledPropertyCardDataWrapper')
 
-        print(len(results))
-
         for result in results:
             url = result.select_one('.StyledPropertyCardDataArea-anchor').attrs['href']
             price = self.cleanup_price(result.select_one('.PropertyCardWrapper__StyledPriceLine').text)
             address = self.cleanup_location(result.select_one('address').text)
 
-            print(f"price: {price}, address: {address}, url: {url}")
-
             search_result = ResultData(price, address, url)
             self.search_results.append(search_result)
 
-        pass
+        print(f"Found {len(results)} search results")
 
     """
     clean up price string by removing '+/mo'
@@ -99,10 +100,15 @@ class ZillowScraper:
         # If I search for all inputs with these classes I should get three results
         # submit button is a div[aria-label='Submit']
 
+        self.driver.get(self.google_form_url)
+        self.driver.maximize_window()
+        time.sleep(2)
+
+        index = 0
+
         # input order is address, price, link
         for search_result in self.search_results:
-            self.driver.get(self.google_form_url)
-            time.sleep(2)
+            print(f"adding search result index {index} to google form")
 
             ec.presence_of_element_located((By.CSS_SELECTOR, "input[type='text']"))
 
@@ -116,10 +122,12 @@ class ZillowScraper:
             submit_button.click()
 
             # now on the formResponse page
-            self.driver.get(self.google_form_response_url)
-            time.sleep(1)
+            # self.driver.get(self.google_form_response_url)
+            time.sleep(0.5)
 
             ec.presence_of_element_located((By.CSS_SELECTOR, 'a[href$="usp=form_confirm"'))
             submit_another_response_link = self.driver.find_element(By.CSS_SELECTOR, 'a[href$="usp=form_confirm"')
             submit_another_response_link.click()
-            time.sleep(2)
+            time.sleep(0.5)
+
+            index += 1
