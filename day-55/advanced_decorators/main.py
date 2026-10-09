@@ -13,6 +13,7 @@ def is_authenticated_decorator(function):
 
 @is_authenticated_decorator
 # attempted to specify the user parameter as type User, but it errored when running this file
+# I think when specifying the parameter type, the parameter becomes a keyword argument (**kwargs)
 def create_blog_post(user):
     print(f"This is {user.name}'s new blog post.")
 
