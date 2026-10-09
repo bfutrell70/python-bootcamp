@@ -3,8 +3,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    # return render_template("index.html")
-    return render_template("brian.html")
+    return render_template("index.html")
 
 # if this file is run as a script perform a task
 if __name__ == "__main__":
