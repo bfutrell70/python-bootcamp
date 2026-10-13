@@ -9,17 +9,7 @@ def home():
 
 @app.route("/login", methods=['POST'])
 def receive_data():
-    # Do something
-    if request.method == 'POST':
-        form_data = request.form
-
-        print("Data posted")
-        print(form_data)
-        print(form_data['username'])
-        print(form_data['password'])
-    else:
-        print("What happened?")
-
+    form_data = request.form
     return render_template("login.html", username=form_data['username'], password=form_data['password'])    
 
 if __name__ == "__main__":
