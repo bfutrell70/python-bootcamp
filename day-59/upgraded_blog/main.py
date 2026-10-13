@@ -27,5 +27,11 @@ def about():
 def contact():
     return render_template("contact.html")
 
+@app.route('/post/<int:post_id>')
+def post(post_id):
+    post = [p for p in blog_posts if p['id'] == post_id][0]
+
+    return render_template("post.html", post=post)
+
 if __name__ == "__main__":
     app.run(debug=True)
