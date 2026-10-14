@@ -1,6 +1,8 @@
 import datetime as dt
 import random
 import smtplib
+import os
+from dotenv import load_dotenv
 
 def get_random_quote():
     """ get a random quote from quotes.txt and return it """
@@ -16,8 +18,10 @@ def send_email(recipient, subject, body):
     :param subject: subject of the email
     :param body: body of the email
     """
-    my_email = "bfutrel@gmail.com"
-    password = 'nepo tswx xvho eige'
+    load_dotenv()
+
+    my_email = os.environ['EMAIL_ADDRESS']
+    password = os.environ['PASSWORD']
     with smtplib.SMTP('smtp.gmail.com') as connection:
         # secures connection to email server - uses TLS
         connection.starttls()
