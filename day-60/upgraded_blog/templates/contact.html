@@ -9,9 +9,15 @@
     <div class="row gx-4 gx-lg-5 justify-content-center">
       <div class="col-md-10 col-lg-8 col-xl-7">
         <div class="page-heading">
-          <h1>Contact Me</h1>
+          <h1>
+            {% if request_method == "GET" %}
+              Contact Me
+            {% elif request_method == "POST" %}
+              Successfully sent your message
+            {% endif %}
+          </h1>
           <span class="subheading">Have questions? I have answers.</span>
-        </div>
+          </div>
       </div>
     </div>
   </div>
@@ -32,6 +38,8 @@
           <form
             id="contactForm"
             name="sentMessage"
+            method="post"
+            action="/contact"
           >
             <div class="form-floating">
               <input

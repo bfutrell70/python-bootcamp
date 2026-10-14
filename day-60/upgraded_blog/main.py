@@ -1,8 +1,8 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import requests
 
 # USE YOUR OWN npoint LINK! ADD AN IMAGE URL FOR YOUR POST. 👇
-posts = requests.get("https://api.npoint.io/c790b4d5cab58020d391").json()
+posts = requests.get('https://api.npoint.io/c790b4d5cab58020d391').json()
 
 app = Flask(__name__)
 
@@ -17,10 +17,18 @@ def about():
     return render_template("about.html")
 
 
-@app.route("/contact")
+@app.route("/contact", methods=["GET", "POST"])
 def contact():
-    return render_template("contact.html")
+    if request.method == "POST":
+        form_data = request.form
+        print("-------------------------")
+        print(f"name: {form_data["name"]}")
+        print(f"email: {form_data["email"]}")
+        print(f"phone: {form_data["phone"]}")
+        print(f"message: {form_data["message"]}")
+        print("-------------------------")
 
+    return render_template("contact.html", request_method=request.method)
 
 @app.route("/post/<int:index>")
 def show_post(index):
