@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 from flask_wtf import FlaskForm
 from wtforms import StringField
+from forms import MyForm
 
 '''
 Red underlines? Install the required packages first: 
@@ -15,14 +16,8 @@ pip3 install -r requirements.txt
 This will install the packages from requirements.txt for this project.
 '''
 
-
 app = Flask(__name__)
 app.secret_key = "kjsdflkjmrx0932uix,heimdj"
-
-class MyForm(FlaskForm):
-    email = StringField('email', label="Email")
-    password = StringField('password', label="Password")
-
 
 @app.route("/")
 def home():
@@ -30,9 +25,9 @@ def home():
 
 @app.route("/login")
 def login():
+    form = MyForm()
 
-
-    return render_template('login.html', form=MyForm)
+    return render_template('login.html', form=form)
 
 
 if __name__ == '__main__':

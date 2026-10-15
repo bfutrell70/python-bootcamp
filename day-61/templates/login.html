@@ -9,7 +9,7 @@
 		<h1>Login</h1>
         <!-- This is where our form will go. -->
 
-		<form action="/login" method="post"></form>
+		<form action="{{ url_for('login') }}" method="post"></form>
 			{{ form.csrf_token }}
 			{{ form.email.label }} {{ form.email(size=30) }}
 			{{ form.password.label }} {{ form.password(size=30) }}
