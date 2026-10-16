@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 from flask_wtf import FlaskForm
 from wtforms import StringField
 from forms import MyForm
+from flask_bootstrap import Bootstrap5
 
 '''
 Red underlines? Install the required packages first: 
@@ -17,11 +18,13 @@ This will install the packages from requirements.txt for this project.
 '''
 
 app = Flask(__name__)
+bootstrap = Bootstrap5(app)
+
 app.secret_key = "kjsdflkjmrx0932uix,heimdj"
 
 @app.route("/")
 def home():
-    return render_template('index.html')
+    return render_template('index.html', bootstrap=bootstrap)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():

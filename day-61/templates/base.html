@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %}</title>
+    {{ bootstrap.load_css() }}
     <style>
     {% block styling %}
-    body {
-        background: purple;
-    }
     {% endblock %}
     </style>
 </head>
 <body>
+    {# Your page content #}
     {% block content %}{% endblock %}
+    {{ bootstrap.load_js() }}
 </body>
 </html>
