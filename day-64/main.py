@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Float
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
+from wtforms import FloatField, StringField, SubmitField, HiddenField
 from wtforms.validators import DataRequired
 import requests
 
@@ -80,12 +80,52 @@ with app.app_context():
 #     db.session.commit()
 
 
+class MovieForm(FlaskForm):
+    # id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    # title: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    # year: Mapped[int] = mapped_column(Integer, nullable=False)
+    # description: Mapped[str] = mapped_column(String(500), nullable=False)
+    # rating: Mapped[float] = mapped_column(Float, nullable=True)
+    # ranking: Mapped[int] = mapped_column(Integer, nullable=True)
+    # review: Mapped[str] = mapped_column(String(255), nullable=True)
+    # img_url: Mapped[str] = mapped_column(String(255), nullable=False)
+    id = HiddenField('id', validators=[DataRequired()])
+    rating = FloatField('Your Rating Out of 10 (e.g. 7.5)')
+    review = StringField('Your Review')
+    submit = SubmitField('Done')
+
 @app.route("/")
 def home():
     with app.app_context():
         movies = db.session.execute(db.select(Movie).order_by(Movie.ranking)).scalars().all()
 
         return render_template("index.html", all_movies=movies)
+
+@app.route("/edit")
+def edit():
+    form = MovieForm()
+    if form.validate_on_submit():
+        movie = db.get_or_404(Movie, int(form.id.data))
+
+        movie.rating = form.rating.data
+        movie.review = form.review.data
+
+        with app.app_context():
+            db.session.commit()
+            return redirect(url_for('home'))
+    
+    
+    id = request.args.get('id')
+
+    with app.app_context():
+        movie = db.get_or_404(Movie, id)
+        form = MovieForm()
+        form.id.data = str(movie.id)
+        form.rating.data = movie.rating
+        form.review.data = movie.review
+
+
+        return render_template("edit.html", form=form)
 
 
 if __name__ == '__main__':
