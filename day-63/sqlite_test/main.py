@@ -80,6 +80,12 @@ with app.app_context():
         db.session.add(book)
         db.session.commit()
 
+# create a new record
+with app.app_context():
+    new_book = Book(id=1, title="Harry Potter", author="J. K. Rowling", rating=9.3)
+    db.session.add(new_book)
+    db.session.commit()
+
 # read all records
 with app.app_context():
     # returns a Result object
@@ -95,16 +101,18 @@ with app.app_context():
 # update a particular record by query
 with app.app_context():
     book_to_update = db.session.execute(db.select(Book).where(Book.title == "Harry Potter")).scalar()
-    book_to_update.title = "Harry Potter and the Chamber of Secrets"
-    db.session.commit()
+    if (book_to_update):
+        book_to_update.title = "Harry Potter and the Chamber of Secrets"
+        db.session.commit()
 
 # update a record by primary key
 book_id = 1
 with app.app_context():
     book_to_update = db.session.execute(db.select(Book).where(Book.id == book_id)).scalar()
-    # or book_to_update = db.get_or_04(Book, book_id)
-    book_to_update.title = "Harry Potter and the Goblet of Fire"
-    db.session.commit()
+    # or book_to_update = db.get_or_404(Book, book_id)
+    if book_to_update:
+        book_to_update.title = "Harry Potter and the Goblet of Fire"
+        db.session.commit()
 
 # delete a particular record by primary key
 book_id = 1
