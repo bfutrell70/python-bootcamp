@@ -103,7 +103,7 @@ def edit():
             movie_id = int(movie_id)
         else:
             movie_id = 0
-            
+
         with app.app_context():
             movie = db.get_or_404(Movie, movie_id)
             # movie = db.session.execute(db.select(Movie).where(Movie.id == form.id.data)).scalar()
@@ -124,6 +124,15 @@ def edit():
         form.review.data = movie.review
 
     return render_template("edit.html", form=form)
+
+@app.route('/delete/<int:id>')
+def delete(id):
+    with app.app_context():
+        movie = db.get_or_404(Movie, id)
+        db.session.delete(movie)
+        db.session.commit()
+
+    return redirect(url_for('home'))
 
 
 if __name__ == '__main__':
