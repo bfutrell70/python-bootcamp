@@ -4,10 +4,12 @@
 
 {% block content %}
 <div class="container">
-    <h1 class="heading">Select Movie</h1>
-  <p>
-    <a href="#"> MOVIE TITLE - MOVIE RELEASE DATE</a>
-  </p>
+  <h1 class="heading">Select Movie</h1>
 
+  {% for movie in movies %}
+  <p>
+    <a href="/select?id={{loop.index0}}"> {{ movie.title }} - {{ movie.year }}</a>
+  </p>
+  {% endfor %}
 </div>
 {% endblock %}

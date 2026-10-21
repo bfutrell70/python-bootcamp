@@ -9,6 +9,9 @@ from flask_wtf import FlaskForm
 from wtforms import FloatField, StringField, SubmitField, HiddenField
 from wtforms.validators import DataRequired
 import requests
+from dotenv import load_dotenv
+from api_functions import APIFunctions
+from MovieData import MovieData
 
 '''
 Red underlines? Install the required packages first: 
@@ -22,6 +25,14 @@ pip3 install -r requirements.txt
 
 This will install the packages from requirements.txt for this project.
 '''
+
+movie_search_api = "https://api.themoviedb.org/3/search/movie"
+image_url = "https://image.tmdb.org/t/p/original"
+load_dotenv()
+api_read_token = os.environ['API_READ_ACCESS_TOKEN']
+
+api_functions = APIFunctions()
+movie_search_results: list[MovieData] = []
 
 # Finds the directory where your script is saved
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -86,6 +97,10 @@ class MovieForm(FlaskForm):
     review = StringField('Your Review')
     submit = SubmitField('Done')
 
+class AddMovieForm(FlaskForm):
+    title = StringField('Movie Title', validators=[DataRequired()])
+    submit = SubmitField('Add Movie')
+
 @app.route("/")
 def home():
     with app.app_context():
@@ -123,7 +138,7 @@ def edit():
         form.rating.data = movie.rating
         form.review.data = movie.review
 
-    return render_template("edit.html", form=form)
+    return render_template("edit.html", form=form, movie=movie)
 
 @app.route('/delete/<int:id>')
 def delete(id):
@@ -133,6 +148,71 @@ def delete(id):
         db.session.commit()
 
     return redirect(url_for('home'))
+
+@app.route("/add", methods=["GET","POST"])
+def add():
+    global movie_search_results
+    form = AddMovieForm()
+
+    if form.validate_on_submit():
+        movie_search_results = api_functions.search_for_movies(search_text=form.title.data)
+
+        return redirect(url_for('select'))
+
+    return render_template("add.html", form=form)
+
+@app.route("/select")
+def select():
+    movie_id = int(request.args.get('id', -1))
+    if movie_id != -1:
+        movie_to_add:MovieData = movie_search_results[movie_id]
+        print(movie_to_add.__dict__)
+
+        # add the movie to the database, then go to the home page.
+        with app.app_context():
+            m = Movie(
+                title = movie_to_add.title,
+                img_url = movie_to_add.img_url,
+                year = int(movie_to_add.year[:4]),
+                description = movie_to_add.description
+            )
+            db.session.add(m)
+            db.session.commit()
+
+            print(m.__dict__)
+            print(m.id)
+
+            # return redirect(url_for('home'))
+            return redirect(url_for('edit', id=m.id))
+
+    return render_template("select.html", movies=movie_search_results)
+
+
+"""
+Requirement 4
+1 - [DONE] define a WTForm with a single field for the title of a movie
+2 - when Add Movie is clicked the server should receive the movie title
+    a) make a request to The Movie Database API to find movies that match the title.
+        - should the movie match the user title or contain the user title?
+        - https://api.themoviedb.org/3/search/movie?query=<<movie title>>
+    b) pass the results from the API to the select.html page
+3 - once the user selects a movie from the select.html page:
+    a) make an API call to the details API
+        - https://api.themoviedb.org/3/movie/<<movie id>>
+        - get the following properties and save them to the database:
+            - title             (title)
+            - img_url           (poster_path) - doesn't appear to be a full URL
+            - year              (release_date (full date - just get the year))
+            - description       (overview)
+
+            ** img_url is only the image filename
+            ** full URL is https://image.tmdb.org/t/p/<<size>>/<<img_url value>>
+            ** https://image.tmdb.org/t/p/original/hbhFnRzzg6ZDmm8YAmxBnQpQIPh.jpg
+4 - once data is saved to the database, redirect to edit.html
+    a) this allows the user to assign a rating and add a review
+        
+
+"""
 
 
 if __name__ == '__main__':
