@@ -149,6 +149,22 @@ def add_cafe():
         return jsonify(response = {"success": "Successfully added the new cafe."})
 
 # HTTP PUT/PATCH - Update Record
+@app.route("/update-price/<int:cafe_id>", methods=["PATCH"])
+def update_price(cafe_id):
+    with app.app_context():
+        cafe = db.session.get(entity=Cafe, ident=cafe_id)
+
+        if cafe:
+            try:
+                new_price = request.args.get("new_price")
+
+                cafe.price = f"${new_price}"
+                db.session.commit()
+                pass
+            except AttributeError:
+                return jsonify(error = {"message": "new_price parameter not passed"})
+
+        return jsonify(error = {"message": "cafe not found"})
 
 # HTTP DELETE - Delete Record
 
