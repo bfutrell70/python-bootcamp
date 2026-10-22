@@ -1,10 +1,10 @@
 import os
 
+import random
 from flask import Flask, jsonify, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Boolean
-
 '''
 Install the required packages first: 
 Open the Terminal in PyCharm (bottom left). 
@@ -26,7 +26,8 @@ file_dir = os.path.join(script_dir,'instance','cafes.db')
 class Base(DeclarativeBase):
     pass
 # Connect to Database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cafes.db'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cafes.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{file_dir}'
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
@@ -53,6 +54,33 @@ with app.app_context():
 @app.route("/")
 def home():
     return render_template("index.html")
+
+# I had previously named this function 'random', which overrode Python's
+# built-in random library.
+@app.route('/random', methods=["GET"])
+def random_cafe():
+    with app.app_context():
+        result = db.session.execute(db.select(Cafe))
+        all_cafes = result.scalars().all()
+        cafe = random.choice(all_cafes)
+        # all_cafes: list[Cafe] = Cafe.query.all()
+        # cafe = random.choice(all_cafes)
+        # --- all of the above into a single line ---
+        # cafe = random.choice(Cafe.query.all())
+        return jsonify(cafe={
+            "can_take_calls":cafe.can_take_calls,
+            "coffee_price":cafe.coffee_price,
+            "has_sockets":cafe.has_sockets,
+            "has_toilet":cafe.has_toilet,
+            "has_wifi":cafe.has_wifi,
+            "id":cafe.id,
+            "img_url":cafe.img_url,
+            "location":cafe.location,
+            "map_url":cafe.map_url,
+            "name":cafe.name,
+            "seats":cafe.seats
+            }
+        )
 
 
 # HTTP GET - Read Record
