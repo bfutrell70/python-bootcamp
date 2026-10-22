@@ -69,6 +69,10 @@ with app.app_context():
 def home():
     return render_template("index.html")
 
+
+
+# HTTP GET - Read Record
+
 # I had previously named this function 'random', which overrode Python's
 # built-in random library.
 @app.route('/random', methods=["GET"])
@@ -119,10 +123,30 @@ def search():
         else:
             return jsonify(cafes=[cafe.to_dict() for cafe in results])
 
-
-# HTTP GET - Read Record
-
 # HTTP POST - Create Record
+
+@app.route("/add", methods=["POST"])
+def add_cafe():
+    data = request.get_json()
+    cafe = Cafe(
+        name=data.get("name"),
+        can_take_calls=data.get("can_take_calls"),
+        coffee_price=data.get("coffee_price"),
+        has_sockets=data.get("has_sockets"),
+        has_toilet=data.get("has_toilet"),
+        has_wifi=data.get("has_wifi"),
+        # id=request.form.get("id"),
+        img_url=data.get("img_url"),
+        location=data.get("location"),
+        map_url=data.get("map_url"),
+        seats=data.get("seats"),
+    )
+
+    with app.app_context():
+        db.session.add(cafe)
+        db.session.commit()
+
+        return jsonify(response = {"success": "Successfully added the new cafe."})
 
 # HTTP PUT/PATCH - Update Record
 
