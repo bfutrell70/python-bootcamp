@@ -6,10 +6,11 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Text
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
+from wtforms import StringField, SubmitField, HiddenField
 from wtforms.validators import DataRequired, URL
 from flask_ckeditor import CKEditor, CKEditorField
-from datetime import date
+from flask_ckeditor.utils import cleanify
+import datetime
 
 '''
 Make sure the required packages are installed: 
@@ -26,6 +27,8 @@ This will install the packages from the requirements.txt for this project.
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+app.config['CKEDITOR_PKG_TYPE'] = 'basic'
+ckeditor = CKEditor(app)
 Bootstrap5(app)
 
 # CREATE DATABASE
@@ -53,13 +56,21 @@ class BlogPost(db.Model):
 with app.app_context():
     db.create_all()
 
+class PostForm(FlaskForm):
+    # id = HiddenField('id', validators=[DataRequired()])
+    title = StringField('Blog Post Title', validators=[DataRequired()])
+    subtitle = StringField('Subtitle', validators=[DataRequired()])
+    author = StringField('Your Name', validators=[DataRequired()])
+    img_url = StringField('Blog Image URL', validators=[DataRequired()])
+    body = CKEditorField('Blog Content', validators=[DataRequired()])
+    submit = SubmitField('Submit Post', validators=[DataRequired()])
 
 @app.route('/')
 def get_all_posts():
     posts = db.session.execute(db.select(BlogPost)).scalars().all()
     return render_template("index.html", all_posts=posts)
 
-# TODO: Add a route so that you can click on individual posts.
+
 @app.route('/post?post_id=<int:post_id>')
 def show_post(post_id):
     requested_post = db.session.get(entity=BlogPost, ident=post_id)
@@ -69,9 +80,37 @@ def show_post(post_id):
 # TODO: add_new_post() to create a new blog post
 @app.route("/new-post", methods=["GET", "POST"])
 def create_post():
-    return render_template("make-post.html")
+    form = PostForm()
+
+    valid_form = form.validate_on_submit()
+    if not valid_form:
+        print(f"form errors:\n{form.errors}")
+
+    if valid_form:
+        x = datetime.datetime.now() 
+
+        post = BlogPost(
+            title = form.title.data,
+            subtitle = form.subtitle.data,
+            date = x.strftime("%B %d, %Y"),
+            body = form.body.data,
+            author = form.author.data,
+            img_url = form.img_url.data
+        )
+
+        print(f"post data:\n {post.__dict__}")
+
+        db.session.add(post)
+        db.session.commit()
+        return redirect(url_for('get_all_posts'))
+
+    return render_template("make-post.html", form=form)
+
 
 # TODO: edit_post() to change an existing blog post
+# @app.route("/edit-post", methods=["GET", "POST"])
+# def edit_post():
+#     return render_template("post.html")
 
 # TODO: delete_post() to remove a blog post from the database
 
