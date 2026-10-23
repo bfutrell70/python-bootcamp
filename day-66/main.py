@@ -158,13 +158,15 @@ def update_price(cafe_id):
             try:
                 new_price = request.args.get("new_price")
 
-                cafe.price = f"${new_price}"
+                cafe.coffee_price = f"${new_price}"
                 db.session.commit()
-                pass
+                return jsonify({
+                    "success": "Successfully updated the price"
+                })
             except AttributeError:
                 return jsonify(error = {"message": "new_price parameter not passed"})
 
-        return jsonify(error = {"message": "cafe not found"})
+        return jsonify(error = {"Not Found": "Sorry a cafe with that id was not found in the database."})
 
 # HTTP DELETE - Delete Record
 
