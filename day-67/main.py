@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, jsonify, render_template, redirect, url_for
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -108,9 +108,17 @@ def create_post():
 
 
 # TODO: edit_post() to change an existing blog post
-# @app.route("/edit-post", methods=["GET", "POST"])
-# def edit_post():
-#     return render_template("post.html")
+@app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
+def edit_post(post_id):
+    post = db.session.get(entity=BlogPost, ident=post_id)
+
+    if post:
+        return jsonify(post)
+    else:
+        return jsonify(error = {
+            "message": "no blog post were found matching the blog_id"
+        })
+
 
 # TODO: delete_post() to remove a blog post from the database
 
