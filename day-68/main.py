@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, render_template, request, url_for, redirect, flash, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
@@ -13,9 +15,10 @@ app.config['SECRET_KEY'] = 'secret-key-goes-here'
 
 class Base(DeclarativeBase):
     pass
-
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+script_dir = os.path.dirname(os.path.abspath(__file__))
+file_dir = os.path.join(script_dir,'instance','users.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{file_dir}'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
