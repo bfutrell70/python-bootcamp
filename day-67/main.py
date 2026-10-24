@@ -135,58 +135,6 @@ def create_post():
     return render_template("make-post.html", form=form, is_edit=False)
 
 
-# TODO: edit_post() to change an existing blog post
-# @app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
-# def edit_post(post_id):
-#     # form = PostForm()
-#     # blog_post = db.session.get(entity=BlogPost, ident=post_id)
-
-#     # if blog_post:
-#     #     if form.validate_on_submit():
-#     #         print("form is valid!")
-#     #         if form.id.data:
-#     #             blog_post.id = form.id.data
-#     #         blog_post.title = form.title.data
-#     #         blog_post.subtitle = form.subtitle.data
-#     #         blog_post.img_url = form.img_url.data
-#     #         blog_post.body = form.body.data
-
-#     #         print(f"blog post to update:\n{blog_post.__dict__}")
-
-#     #         db.session.commit()
-
-#     #         return redirect(url_for('show_post', post_id=blog_post.id))
-#     #     else:
-#     #         print("form is not valid!")
-#     #         form = CreatePostForm(blog_post)
-#     #         return render_template("make-post.html", form=form, is_edit=True)
-#     # else:
-#     #     return jsonify(error = {
-#     #         "message": "no blog post were found matching the blog_id"
-#     #     })
-#     post = db.get_or_404(BlogPost, post_id)
-#     edit_form = CreatePostForm(
-#         title = post.title,
-#         subtitle=post.subtitle,
-#         img_url=post.img_url,
-#         author=post.author,
-#         body = post.body
-#     )
-
-#     if edit_form.validate_on_submit():
-#         post.title = edit_form.title.data
-#         post.subtitle = edit_form.subtitle.data
-#         post.img_url = edit_form.img_url.data
-#         post.author = edit_form.author.data
-#         post.body = edit_form.body.data
-
-#         print(f"blog post to update:\n{post.__dict__}")
-
-#         db.session.commit()
-
-#         return redirect(url_for('show_post', post_id=post.id))
-    
-#     return render_template("make-post.html", form=edit_form, is_edit=True)
 @app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
 def edit_post(post_id):
     edit_form = PostForm()
@@ -219,6 +167,13 @@ def edit_post(post_id):
 
 
 # TODO: delete_post() to remove a blog post from the database
+@app.route("/delete/<int:post_id>")
+def delete_post(post_id):
+    post = db.session.get(BlogPost, post_id)
+    db.session.delete(post)
+    db.session.commit()
+    return redirect(url_for("get_all_posts"))
+
 
 # Below is the code from previous lessons. No changes needed.
 @app.route("/about")
