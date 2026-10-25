@@ -90,7 +90,7 @@ def logout():
 
 @app.route('/download')
 def download():
-    return send_from_directory("./static/files", "cheat_sheet.pdf")
+    return send_from_directory("static", path="files/cheat_sheet.pdf")
     pass
 
 
