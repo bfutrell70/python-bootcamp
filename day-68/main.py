@@ -13,7 +13,7 @@ from wtforms.validators import DataRequired, Email
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret-key-goes-here'
 
-# CREATE DATABASE
+# CREATE DATABASEs
 
 
 class Base(DeclarativeBase):
@@ -36,7 +36,7 @@ class User(db.Model):
 
 class RegisterForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
-    email = StringField('Email Address', validators=[DataRequired(), Email()])
+    email = StringField('Email Address', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
 
 
@@ -90,6 +90,7 @@ def logout():
 
 @app.route('/download')
 def download():
+    return send_from_directory("./static/files", "cheat_sheet.pdf")
     pass
 
 
