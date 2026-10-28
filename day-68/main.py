@@ -6,18 +6,21 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String
+import sqlalchemy as sa
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired, Email
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret-key-goes-here'
+app.secret_key = 'secret-key-goes-here!!!'
 
 # CREATE DATABASEs
 
 
 class Base(DeclarativeBase):
     pass
+
 script_dir = os.path.dirname(os.path.abspath(__file__))
 file_dir = os.path.join(script_dir,'instance','users.db')
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{file_dir}'
@@ -28,17 +31,33 @@ db.init_app(app)
 # CREATE TABLE IN DB
 
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     email: Mapped[str] = mapped_column(String(100), unique=True)
     password: Mapped[str] = mapped_column(String(100))
     name: Mapped[str] = mapped_column(String(1000))
+
+    def set_password(self, password):
+        self.password = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
+
+# SETUP LoginManager
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+# CREATE FORMS
 
 class RegisterForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     email = StringField('Email Address', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
 
+class LoginForm(FlaskForm):
+    email = StringField('Email Address', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    
 
 with app.app_context():
     db.create_all()
@@ -80,25 +99,49 @@ def register():
     return render_template("register.html", form=form)
 
 
-@app.route('/login')
+@app.route('/login', methods=["GET", "POST"])
 def login():
-    return render_template("login.html")
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        user = db.session.scalar(
+            sa.select(User).where(User.email == form.email.data)
+        )
+
+        if user is None or not user.check_password(form.password.data):
+            print("Invalid username or password")
+            return redirect(url_for('login'))
+
+        login_user(user)
+        return redirect(url_for('secrets', name=user.name))
+
+    return render_template("login.html", form=form)
 
 
 @app.route('/secrets?name=<name>')
+@login_required
 def secrets(name):
     return render_template("secrets.html", name=name)
 
 
 @app.route('/logout')
 def logout():
-    pass
+    logout_user()
+    return redirect(url_for('home'))
 
 
 @app.route('/download')
+@login_required
 def download():
     return send_from_directory("static", path="files/cheat_sheet.pdf")
-    pass
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db.session.get(User, int(user_id))
 
 
 if __name__ == "__main__":
