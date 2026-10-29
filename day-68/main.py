@@ -73,14 +73,20 @@ def register():
     form = RegisterForm()
 
     if form.validate_on_submit():
-        print(form.data)
+
+        user = db.session.scalar(
+            sa.select(User).where(User.email == form.email.data)
+        )
+
+        if user:
+            flash("You've already signed up with that email, login instead!")
+            return redirect(url_for('login'))
 
         hash_and_salted_password = generate_password_hash(
             password=form.password.data,
             method='pbkdf2:sha256',
             salt_length=8
         )
-
 
         user = User(
             email = form.email.data,
@@ -111,8 +117,12 @@ def login():
             sa.select(User).where(User.email == form.email.data)
         )
 
-        if user is None or not user.check_password(form.password.data):
-            print("Invalid username or password")
+        if user is None:
+            flash("Invalid email address, please try again.")
+            return redirect(url_for('login'))
+        
+        if not user.check_password(form.password.data):
+            flash("Invalid password, please try again.")
             return redirect(url_for('login'))
 
         login_user(user)
