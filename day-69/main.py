@@ -14,7 +14,7 @@ import sqlalchemy as sa
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 # Import your forms from the forms.py
-from forms import CreatePostForm, LoginForm, RegisterForm
+from forms import CommentForm, CreatePostForm, LoginForm, RegisterForm
 
 
 '''
@@ -86,6 +86,10 @@ class BlogPost(db.Model):
 
     img_url: Mapped[str] = mapped_column(String(250), nullable=False)
 
+class Comment(db.Model):
+    __tablename__ = "comments"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
 
 with app.app_context():
     db.create_all()
@@ -180,10 +184,16 @@ def get_all_posts():
 
 
 # TODO: Allow logged-in users to comment on posts
-@app.route("/post/<int:post_id>")
+@app.route("/post/<int:post_id>", methods=["GET","POST"])
 def show_post(post_id):
+    form = CommentForm()
+
+    if form.validate_on_submit():
+        # save comment
+        pass
+
     requested_post = db.get_or_404(BlogPost, post_id)
-    return render_template("post.html", post=requested_post)
+    return render_template("post.html", post=requested_post, form=form, current_user=current_user)
 
 
 # TODO: Use a decorator so only an admin user can create a new post
