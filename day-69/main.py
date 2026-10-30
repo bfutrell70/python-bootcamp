@@ -33,8 +33,9 @@ app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
 ckeditor = CKEditor(app)
 Bootstrap5(app)
 
-# TODO: Configure Flask-Login
-
+# Configure Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 
 # CREATE DATABASE
@@ -107,7 +108,8 @@ def register():
 
         login_user(user)
         return redirect(url_for("get_all_posts"))
-
+    else:
+        print(f"form errors: {form.errors}")
 
     return render_template("register.html", form=form)
 
@@ -124,17 +126,25 @@ def login():
 
         if user is None:
             flash("Invalid email address, please try again.")
+            print("invalid email address")
             return redirect(url_for('login'))
         
         if not user.check_password(form.password.data):
             flash("Invalid password, please try again.")
+            print("invalid password")
             return redirect(url_for('login'))
+
+        login_user(user)
+        return render_template("index.html")
+    else:
+        print(f"form errors: {form.errors}")
 
     return render_template("login.html", form=form)
 
 
 @app.route('/logout')
 def logout():
+    logout_user()
     return redirect(url_for('get_all_posts'))
 
 
@@ -142,6 +152,9 @@ def logout():
 def get_all_posts():
     result = db.session.execute(db.select(BlogPost))
     posts = result.scalars().all()
+
+    print(f"current_user:\n{current_user.__dict__}")
+
     return render_template("index.html", all_posts=posts)
 
 
@@ -211,6 +224,9 @@ def about():
 def contact():
     return render_template("contact.html")
 
+@login_manager.user_loader
+def load_user(user_id):
+    return db.session.get(User, int(user_id))
 
 if __name__ == "__main__":
     app.run(debug=True, port=5002)
