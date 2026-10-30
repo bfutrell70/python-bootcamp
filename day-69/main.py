@@ -1,5 +1,6 @@
 from datetime import date
 import os
+from typing import List
 from unittest import result
 from flask import Flask, abort, render_template, redirect, url_for, flash
 from flask_bootstrap import Bootstrap5
@@ -8,7 +9,7 @@ from flask_gravatar import Gravatar
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import Integer, String, Text
+from sqlalchemy import ForeignKey, Integer, String, Text
 import sqlalchemy as sa
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -50,6 +51,24 @@ app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{file_dir}'
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
+# Create a User table for all your registered users. 
+class User(db.Model, UserMixin):
+    __tablename__ = "users"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    email: Mapped[str] = mapped_column(String(100), unique=True)
+    password: Mapped[str] = mapped_column(String(100))
+    name: Mapped[str] = mapped_column(String(1000))
+
+    # This will act like a list of BlogPost objects attached to each User.
+    # The "author" refers to the author property in the BlogPost class.
+    posts: Mapped[List["BlogPost"]] = relationship(back_populates="author")
+
+    def set_password(self, password):
+        self.password = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
+
 
 # CONFIGURE TABLES
 class BlogPost(db.Model):
@@ -59,22 +78,14 @@ class BlogPost(db.Model):
     subtitle: Mapped[str] = mapped_column(String(250), nullable=False)
     date: Mapped[str] = mapped_column(String(250), nullable=False)
     body: Mapped[str] = mapped_column(Text, nullable=False)
-    author: Mapped[str] = mapped_column(String(250), nullable=False)
+
+    # Create reference to the User object. The "posts" refers to the posts property in the User class.
+    author:Mapped["User"] = relationship(back_populates="posts")
+    # Create foreign key, "users.id" the users refer to the tablename of User.
+    author_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"))
+
     img_url: Mapped[str] = mapped_column(String(250), nullable=False)
 
-
-# Create a User table for all your registered users. 
-class User(db.Model, UserMixin):
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    email: Mapped[str] = mapped_column(String(100), unique=True)
-    password: Mapped[str] = mapped_column(String(100))
-    name: Mapped[str] = mapped_column(String(1000))
-
-    def set_password(self, password):
-        self.password = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password, password)
 
 with app.app_context():
     db.create_all()
