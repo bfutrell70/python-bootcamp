@@ -48,7 +48,19 @@
 
           <!-- TODO: Show all the comments on a post -->
           <ul class="commentList">
-            <li>
+            {% for comment in post.comments %}
+              <li>
+                <div class="commenterImage">
+                  <!-- <img src="../static/assets/img/default-profile.jpg" /> -->
+                  <img src="{{ current_user.avatar(100) }}" alt="">
+                </div>
+                <div class="commentText">
+                  {{comment.text|safe}}
+                  <span class="date sub-text">{{comment.author.name}}</span>
+                </div>
+              </li>
+            {% endfor %}
+            <!-- <li>
               <div class="commenterImage">
                 <img src="../static/assets/img/default-profile.jpg" />
               </div>
@@ -56,7 +68,7 @@
                 <p>Some comment</p>
                 <span class="date sub-text">comment author name</span>
               </div>
-            </li>
+            </li> -->
           </ul>
         </div>
       </div>

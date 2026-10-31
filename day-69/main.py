@@ -13,6 +13,7 @@ from sqlalchemy import ForeignKey, Integer, String, Text
 import sqlalchemy as sa
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
+from hashlib import md5
 # Import your forms from the forms.py
 from forms import CommentForm, CreatePostForm, LoginForm, RegisterForm
 
@@ -62,12 +63,17 @@ class User(db.Model, UserMixin):
     # This will act like a list of BlogPost objects attached to each User.
     # The "author" refers to the author property in the BlogPost class.
     posts: Mapped[List["BlogPost"]] = relationship(back_populates="author")
+    comments: Mapped[List["Comment"]] = relationship(back_populates="author")
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.password, password)
+
+    def avatar(self, size=80):
+        digest = md5(self.email.lower().encode('utf-8')).hexdigest()
+        return f'https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}'
 
 
 # CONFIGURE TABLES
@@ -85,12 +91,22 @@ class BlogPost(db.Model):
     author_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"))
 
     img_url: Mapped[str] = mapped_column(String(250), nullable=False)
+    comments: Mapped[List["Comment"]] = relationship(back_populates="post")
 
+    
 class Comment(db.Model):
     __tablename__ = "comments"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     text: Mapped[str] = mapped_column(Text, nullable=False)
+    author:Mapped["User"] = relationship(back_populates="comments")
+    # Create foreign key, "users.id" the users refer to the tablename of User.
+    author_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"))
 
+    post:Mapped["BlogPost"] = relationship(back_populates="comments")
+    # Create foreign key, "users.id" the users refer to the tablename of User.
+    post_id: Mapped[int] = mapped_column(db.ForeignKey("blog_posts.id"))
+
+    
 with app.app_context():
     db.create_all()
 
@@ -189,8 +205,20 @@ def show_post(post_id):
     form = CommentForm()
 
     if form.validate_on_submit():
-        # save comment
-        pass
+
+        if current_user.is_authenticated:
+
+            # save comment
+            new_comment = Comment(
+                text = form.comment_text.data,
+                author_id = current_user.id,
+                post_id = post_id
+            )
+            db.session.add(new_comment)
+            db.session.commit()
+        else:
+            flash("You need to login to register or comment")
+            return redirect(url_for("login"))
 
     requested_post = db.get_or_404(BlogPost, post_id)
     return render_template("post.html", post=requested_post, form=form, current_user=current_user)
