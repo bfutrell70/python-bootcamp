@@ -1,6 +1,7 @@
 import os
 
-from flask import Flask, render_template, request, url_for, redirect, flash, send_from_directory
+from flask import Flask, render_template, request, url_for, redirect, flash, send_from_directory, session
+import flask
 from flask_wtf import FlaskForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
@@ -12,6 +13,11 @@ from wtforms.validators import DataRequired, Email
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret-key-goes-here'
+
+# set up flask_login's LoginManager
+app.secret_key = '1d179a0cf2b2c1ad1dd577138326de0eab75615ea3447ecd0c0e8033a646f067'
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 # CREATE DATABASEs
 
@@ -28,7 +34,7 @@ db.init_app(app)
 # CREATE TABLE IN DB
 
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     email: Mapped[str] = mapped_column(String(100), unique=True)
     password: Mapped[str] = mapped_column(String(100))
@@ -39,6 +45,9 @@ class RegisterForm(FlaskForm):
     email = StringField('Email Address', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
 
+class LoginForm(FlaskForm):
+    email = StringField('Email Address', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
 
 with app.app_context():
     db.create_all()
@@ -80,12 +89,25 @@ def register():
     return render_template("register.html", form=form)
 
 
-@app.route('/login')
+@app.route('/login', methods=["GET", "POST"])
 def login():
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        login_user(user)
+
+        next = flask.request.args.get('next')
+
+        if not url_has_allowed_host_and_scheme(next, request.host):
+            return flask.abort(400)
+
+        return redirect(next or url_for('home'))
+    
     return render_template("login.html")
 
 
 @app.route('/secrets?name=<name>')
+@login_required
 def secrets(name):
     return render_template("secrets.html", name=name)
 
@@ -96,10 +118,43 @@ def logout():
 
 
 @app.route('/download')
+@login_required
 def download():
     return send_from_directory("static", path="files/cheat_sheet.pdf")
     pass
 
+@login_manager.user_loader
+def load_user(user_id):
+    return db.get_or_404(User, user_id)
+
+# from https://github.com/django/django/blob/4.0/django/utils/http.py#L239
+def url_has_allowed_host_and_scheme(url, allowed_hosts, require_https=False):
+    """
+    Return ``True`` if the url uses an allowed host and a safe scheme.
+
+    Always return ``False`` on an empty url.
+
+    If ``require_https`` is ``True``, only 'https' will be considered a valid
+    scheme, as opposed to 'http' and 'https' with the default, ``False``.
+
+    Note: "True" doesn't entail that a URL is "safe". It may still be e.g.
+    quoted incorrectly. Ensure to also use django.utils.encoding.iri_to_uri()
+    on the path component of untrusted URLs.
+    """
+    if url is not None:
+        url = url.strip()
+    if not url:
+        return False
+    if allowed_hosts is None:
+        allowed_hosts = set()
+    elif isinstance(allowed_hosts, str):
+        allowed_hosts = {allowed_hosts}
+    # Chrome treats \ completely as / in paths but it could be part of some
+    # basic auth credentials so we need to check both URLs.
+    return (
+        _url_has_allowed_host_and_scheme(url, allowed_hosts, require_https=require_https) and
+        _url_has_allowed_host_and_scheme(url.replace('\\', '/'), allowed_hosts, require_https=require_https)
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)
