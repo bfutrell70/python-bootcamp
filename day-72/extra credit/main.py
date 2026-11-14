@@ -1,3 +1,5 @@
+import os
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import pandas as pd
@@ -48,11 +50,13 @@ console.log(table_body_rows);
 report_content = driver.find_element(By.CSS_SELECTOR, "#collegeSalaryReportContent")
 content_row = report_content.find_elements(By.CSS_SELECTOR, ".row .row")[-1]
 
+print('clicking See Full List button')
 full_list_button = content_row.find_element(By.CSS_SELECTOR, "a.btn-block")
 full_list_button.click()
 
+print("getting data rows from table")
 data_table_rows = report_content.find_elements(By.CSS_SELECTOR, "table tbody tr[id]")
-print(len(data_table_rows))
+print(f'data rows found: {len(data_table_rows)}')
 
 # set up an empty DataFrame with column names
 salary_data = pd.DataFrame(columns=['rank', 'major', 'degree_type', 'early_career_pay', 'min_career_pay', 'percent_high_meaning']).astype({
@@ -66,13 +70,12 @@ salary_data = pd.DataFrame(columns=['rank', 'major', 'degree_type', 'early_caree
 
 row_count = 1
 for row in data_table_rows:
-	print(f'on row {row_count}')
+	print(f'processing row {row_count}')
 
-	print(row.get_attribute('outerHTML'))
-	print(f'table row ID: {row.get_dom_attribute('id')}')
+	# print(row.get_attribute('outerHTML'))
+	# print(f'table row ID: {row.get_dom_attribute('id')}')
 
 	cells = row.find_elements(By.CSS_SELECTOR, 'td.hidden-xs')
-	print(f'cells found: {len(cells)}')
 
 	salary_data.loc[len(salary_data)] = [
 		cells[0].text,	# rank (some rows have the ra)
@@ -84,5 +87,10 @@ for row in data_table_rows:
 	]
 
 	row_count += 1
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+file_dir = os.path.join(script_dir,'salary_data.csv')
+
+salary_data.to_csv(file_dir, index=False)
 
 print(salary_data)
