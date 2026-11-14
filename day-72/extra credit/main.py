@@ -1,6 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-import pandas
+import pandas as pd
 
 """
 - scrape data from PayScale's website for pay scale information by college major
@@ -31,15 +31,58 @@ chrome_options.add_experimental_option("detach", True)
 driver = webdriver.Chrome(options=chrome_options)
 driver.get(SOURCE_URI)
 
+"""
+test JavaScript code I wrote to get table rows within the table element without
+getting the rows withn the subtables contained within the ending table cell
+---------
+const report_div = document.getElementById("collegeSalaryReportContent");
+console.log(report_div);
+
+const data_table = report_div.querySelector(".row .row table");
+console.log(data_table);
+
+const table_body_rows = data_table.querySelectorAll('tr[id]');
+console.log(table_body_rows);
+"""
+
 report_content = driver.find_element(By.CSS_SELECTOR, "#collegeSalaryReportContent")
 content_row = report_content.find_elements(By.CSS_SELECTOR, ".row .row")[-1]
 
 full_list_button = content_row.find_element(By.CSS_SELECTOR, "a.btn-block")
 full_list_button.click()
 
-data_table_rows = driver.find_elements(By.CSS_SELECTOR, "table tbody tr")
+data_table_rows = report_content.find_elements(By.CSS_SELECTOR, "table tbody tr[id]")
 print(len(data_table_rows))
 
+# set up an empty DataFrame with column names
+salary_data = pd.DataFrame(columns=['rank', 'major', 'degree_type', 'early_career_pay', 'min_career_pay', 'percent_high_meaning']).astype({
+	'rank': 'string', 
+	'major': 'string', 
+	'degree_type': 'string', 
+	'early_career_pay': 'string', 
+	'min_career_pay': 'string', 
+	'percent_high_meaning': 'string'
+})
+
+row_count = 1
 for row in data_table_rows:
-    # first row is column headings
-    pass
+	print(f'on row {row_count}')
+
+	print(row.get_attribute('outerHTML'))
+	print(f'table row ID: {row.get_dom_attribute('id')}')
+
+	cells = row.find_elements(By.CSS_SELECTOR, 'td.hidden-xs')
+	print(f'cells found: {len(cells)}')
+
+	salary_data.loc[len(salary_data)] = [
+		cells[0].text,	# rank (some rows have the ra)
+		cells[1].text,  # major
+		cells[2].text,  # degree type
+		cells[3].text,  # early career pay (in currency format - $#,###)
+		cells[4].text,  # mid career pay (in currency format - $#,###)
+		cells[5].text   # % high meaning (in percent format - ##%, some rows have 'N/A')
+	]
+
+	row_count += 1
+
+print(salary_data)
